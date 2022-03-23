@@ -1,0 +1,15 @@
+type ExampleEntity @entity {
+  id: ID!
+  count: BigInt!
+  owner: Bytes! # address
+  approved: Bytes! # address
+}
+
+type ShareableToken @entity {
+  id: ID!
+  owner: Bytes! # address
+  sharedBy: [Bytes!]! # address - open sharing
+  sharedWith: [Bytes!]! # address - permissioned sharing
+}
+
+

@@ -1,0 +1,36 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ShareableERC721_Streamr
+    network: ropsten
+    source:
+      address: "0x4381dBc9b27B035f87a04995400879Cd6e977AED"
+      abi: ShareableERC721_Streamr
+      startBlock: 12084349
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - ApprovalForAll
+        - OwnershipTransferred
+        - Share
+        - Transfer
+      abis:
+        - name: ShareableERC721_Streamr
+          file: ./abis/ShareableERC721_Streamr.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,indexed uint256)
+          handler: handleApproval
+        - event: ApprovalForAll(indexed address,indexed address,bool)
+          handler: handleApprovalForAll
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Share(indexed address,indexed address,indexed uint256)
+          handler: handleShare
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/mapping.ts

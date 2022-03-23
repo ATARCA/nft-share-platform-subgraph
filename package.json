@@ -1,0 +1,21 @@
+{
+  "name": "nft-share-platform-ropsten",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ atarca/nft-share-platform-ropsten",
+    "create-local": "graph create --node http://localhost:8020/ atarca/nft-share-platform-ropsten",
+    "remove-local": "graph remove --node http://localhost:8020/ atarca/nft-share-platform-ropsten",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 atarca/nft-share-platform-ropsten",
+    "docker-build": "docker build -t matchstick .",
+    "test": "docker run -it --rm --mount type=bind,source=<absolute/path/to/project>,target=/matchstick matchstick"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.26.0",
+    "@graphprotocol/graph-ts": "0.24.1"
+  },
+  "devDependencies": {
+    "matchstick-as": "0.3.0"
+  }
+}
