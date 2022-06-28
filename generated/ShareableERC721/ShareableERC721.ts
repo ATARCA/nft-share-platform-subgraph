@@ -62,6 +62,28 @@ export class ApprovalForAll__Params {
   }
 }
 
+export class Mint extends ethereum.Event {
+  get params(): Mint__Params {
+    return new Mint__Params(this);
+  }
+}
+
+export class Mint__Params {
+  _event: Mint;
+
+  constructor(event: Mint) {
+    this._event = event;
+  }
+
+  get to(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get tokenId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+}
+
 export class OwnershipTransferred extends ethereum.Event {
   get params(): OwnershipTransferred__Params {
     return new OwnershipTransferred__Params(this);
@@ -108,6 +130,10 @@ export class Share__Params {
   get tokenId(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
+
+  get derivedFromTokenId(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
 }
 
 export class Transfer extends ethereum.Event {
@@ -136,9 +162,9 @@ export class Transfer__Params {
   }
 }
 
-export class ShareableERC721_Streamr extends ethereum.SmartContract {
-  static bind(address: Address): ShareableERC721_Streamr {
-    return new ShareableERC721_Streamr("ShareableERC721_Streamr", address);
+export class ShareableERC721 extends ethereum.SmartContract {
+  static bind(address: Address): ShareableERC721 {
+    return new ShareableERC721("ShareableERC721", address);
   }
 
   balanceOf(owner: Address): BigInt {
@@ -294,6 +320,25 @@ export class ShareableERC721_Streamr extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toString());
   }
 
+  tokenExists(tokenId: BigInt): boolean {
+    let result = super.call("tokenExists", "tokenExists(uint256):(bool)", [
+      ethereum.Value.fromUnsignedBigInt(tokenId)
+    ]);
+
+    return result[0].toBoolean();
+  }
+
+  try_tokenExists(tokenId: BigInt): ethereum.CallResult<boolean> {
+    let result = super.tryCall("tokenExists", "tokenExists(uint256):(bool)", [
+      ethereum.Value.fromUnsignedBigInt(tokenId)
+    ]);
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
   tokenURI(tokenId: BigInt): string {
     let result = super.call("tokenURI", "tokenURI(uint256):(string)", [
       ethereum.Value.fromUnsignedBigInt(tokenId)
@@ -402,10 +447,6 @@ export class MintCall__Inputs {
   get account(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
 }
 
 export class MintCall__Outputs {
@@ -438,86 +479,6 @@ export class RenounceOwnershipCall__Outputs {
   _call: RenounceOwnershipCall;
 
   constructor(call: RenounceOwnershipCall) {
-    this._call = call;
-  }
-}
-
-export class SafeTransferFromCall extends ethereum.Call {
-  get inputs(): SafeTransferFromCall__Inputs {
-    return new SafeTransferFromCall__Inputs(this);
-  }
-
-  get outputs(): SafeTransferFromCall__Outputs {
-    return new SafeTransferFromCall__Outputs(this);
-  }
-}
-
-export class SafeTransferFromCall__Inputs {
-  _call: SafeTransferFromCall;
-
-  constructor(call: SafeTransferFromCall) {
-    this._call = call;
-  }
-
-  get from(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get to(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-}
-
-export class SafeTransferFromCall__Outputs {
-  _call: SafeTransferFromCall;
-
-  constructor(call: SafeTransferFromCall) {
-    this._call = call;
-  }
-}
-
-export class SafeTransferFrom1Call extends ethereum.Call {
-  get inputs(): SafeTransferFrom1Call__Inputs {
-    return new SafeTransferFrom1Call__Inputs(this);
-  }
-
-  get outputs(): SafeTransferFrom1Call__Outputs {
-    return new SafeTransferFrom1Call__Outputs(this);
-  }
-}
-
-export class SafeTransferFrom1Call__Inputs {
-  _call: SafeTransferFrom1Call;
-
-  constructor(call: SafeTransferFrom1Call) {
-    this._call = call;
-  }
-
-  get from(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get to(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-
-  get _data(): Bytes {
-    return this._call.inputValues[3].value.toBytes();
-  }
-}
-
-export class SafeTransferFrom1Call__Outputs {
-  _call: SafeTransferFrom1Call;
-
-  constructor(call: SafeTransferFrom1Call) {
     this._call = call;
   }
 }
@@ -586,40 +547,6 @@ export class SetBaseURICall__Outputs {
   }
 }
 
-export class SetTokenURICall extends ethereum.Call {
-  get inputs(): SetTokenURICall__Inputs {
-    return new SetTokenURICall__Inputs(this);
-  }
-
-  get outputs(): SetTokenURICall__Outputs {
-    return new SetTokenURICall__Outputs(this);
-  }
-}
-
-export class SetTokenURICall__Inputs {
-  _call: SetTokenURICall;
-
-  constructor(call: SetTokenURICall) {
-    this._call = call;
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get tokenURI(): string {
-    return this._call.inputValues[1].value.toString();
-  }
-}
-
-export class SetTokenURICall__Outputs {
-  _call: SetTokenURICall;
-
-  constructor(call: SetTokenURICall) {
-    this._call = call;
-  }
-}
-
 export class ShareCall extends ethereum.Call {
   get inputs(): ShareCall__Inputs {
     return new ShareCall__Inputs(this);
@@ -644,54 +571,12 @@ export class ShareCall__Inputs {
   get tokenIdToBeShared(): BigInt {
     return this._call.inputValues[1].value.toBigInt();
   }
-
-  get newTokenId(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
 }
 
 export class ShareCall__Outputs {
   _call: ShareCall;
 
   constructor(call: ShareCall) {
-    this._call = call;
-  }
-}
-
-export class TransferFromCall extends ethereum.Call {
-  get inputs(): TransferFromCall__Inputs {
-    return new TransferFromCall__Inputs(this);
-  }
-
-  get outputs(): TransferFromCall__Outputs {
-    return new TransferFromCall__Outputs(this);
-  }
-}
-
-export class TransferFromCall__Inputs {
-  _call: TransferFromCall;
-
-  constructor(call: TransferFromCall) {
-    this._call = call;
-  }
-
-  get from(): Address {
-    return this._call.inputValues[0].value.toAddress();
-  }
-
-  get to(): Address {
-    return this._call.inputValues[1].value.toAddress();
-  }
-
-  get tokenId(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-}
-
-export class TransferFromCall__Outputs {
-  _call: TransferFromCall;
-
-  constructor(call: TransferFromCall) {
     this._call = call;
   }
 }

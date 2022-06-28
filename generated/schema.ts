@@ -81,7 +81,8 @@ export class ShareableToken extends Entity {
     this.set("id", Value.fromString(id));
 
     this.set("owner", Value.fromBytes(Bytes.empty()));
-    this.set("sharedBy", Value.fromBytesArray(new Array(0)));
+    this.set("isOriginal", Value.fromBoolean(false));
+    this.set("isSharedInstance", Value.fromBoolean(false));
     this.set("sharedWith", Value.fromBytesArray(new Array(0)));
   }
 
@@ -120,13 +121,56 @@ export class ShareableToken extends Entity {
     this.set("owner", Value.fromBytes(value));
   }
 
-  get sharedBy(): Array<Bytes> {
-    let value = this.get("sharedBy");
-    return value!.toBytesArray();
+  get isOriginal(): boolean {
+    let value = this.get("isOriginal");
+    return value!.toBoolean();
   }
 
-  set sharedBy(value: Array<Bytes>) {
-    this.set("sharedBy", Value.fromBytesArray(value));
+  set isOriginal(value: boolean) {
+    this.set("isOriginal", Value.fromBoolean(value));
+  }
+
+  get isSharedInstance(): boolean {
+    let value = this.get("isSharedInstance");
+    return value!.toBoolean();
+  }
+
+  set isSharedInstance(value: boolean) {
+    this.set("isSharedInstance", Value.fromBoolean(value));
+  }
+
+  get tokenId(): BigInt | null {
+    let value = this.get("tokenId");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set tokenId(value: BigInt | null) {
+    if (!value) {
+      this.unset("tokenId");
+    } else {
+      this.set("tokenId", Value.fromBigInt(<BigInt>value));
+    }
+  }
+
+  get parentTokenId(): BigInt | null {
+    let value = this.get("parentTokenId");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set parentTokenId(value: BigInt | null) {
+    if (!value) {
+      this.unset("parentTokenId");
+    } else {
+      this.set("parentTokenId", Value.fromBigInt(<BigInt>value));
+    }
   }
 
   get sharedWith(): Array<Bytes> {
