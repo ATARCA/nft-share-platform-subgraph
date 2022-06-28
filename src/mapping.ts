@@ -1,12 +1,12 @@
 import { BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 import {
-  ShareableERC721_Streamr,
+  ShareableERC721,
   Approval,
   ApprovalForAll,
   OwnershipTransferred,
   Share,
-  Transfer
-} from "../generated/ShareableERC721_Streamr/ShareableERC721_Streamr"
+  Mint
+} from "../generated/ShareableERC721/ShareableERC721"
 import { ExampleEntity, ShareableToken } from "../generated/schema"
 
 export function handleApproval(event: Approval): void {
@@ -63,10 +63,9 @@ export function handleApprovalForAll(event: ApprovalForAll): void {}
 
 export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
 
-export function getTokenEntityId(tokenId: BigInt, contractAddress: String): string {
-  return `${tokenId}-${contractAddress}`
+export function getTokenEntityId(contractAddress: String, tokenId: BigInt): string {
+  return `${contractAddress.toLowerCase()}-${tokenId}`
 }
-
 
 //next- listen to multiple contracts
 //next- template for different networks
@@ -76,30 +75,52 @@ export function getTokenEntityId(tokenId: BigInt, contractAddress: String): stri
 //npm ci
 //(to run tests )install docker + https://github.com/LimeChain/matchstick/blob/main/README.md#quick-start-
 
+
 export function handleShare(event: Share): void {
 
-  const tokenEntityId = getTokenEntityId(event.params.tokenId, event.address.toHex())
-  let token = ShareableToken.load(tokenEntityId)
+  const newTokenEntityId = getTokenEntityId( event.address.toHex(), event.params.tokenId)
+  const parentTokenEntityId = getTokenEntityId( event.address.toHex(), event.params.derivedFromTokenId)
+  
+  let parentToken = ShareableToken.load(parentTokenEntityId)
 
-  if (!token) {
-    token = new ShareableToken(tokenEntityId)
+  if (!parentToken) {
+    parentToken = new ShareableToken(parentTokenEntityId)
+    log.critical('Shared token does not exist. Event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
   }
 
+  const newToken = new ShareableToken(newTokenEntityId)
+
+  newToken.owner = event.params.to
+  newToken.parentTokenId = event.params.derivedFromTokenId
+  newToken.tokenId = event.params.tokenId
+  newToken.isOriginal = false
+  newToken.isSharedInstance = true
+
   log.info('logging sharedBy event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
-  log.info('sharedByBefore size {}',[token.sharedBy.length.toString()])
-  token.owner = event.address
+ 
 
-  const sharedBy = token.sharedBy
-  sharedBy.push(event.params.to)
-  sharedBy.push(event.params.to)
+  const sharedWith = parentToken.sharedWith
+  sharedWith.push(event.params.to)
+  parentToken.sharedWith = sharedWith
 
-  token.sharedBy = sharedBy
-  log.info('sharedByAfter size {}',[token.sharedBy.length.toString()])
 
-  token.save()
+  newToken.save()
+  parentToken.save()
 }
 
-export function handleTransfer(event: Transfer): void {}
+export function handleMint(event: Mint): void {
+
+const contractAddress = event.address;
+const tokenEntityId = getTokenEntityId(contractAddress.toHex(), event.params.tokenId)
+
+const token = new ShareableToken(tokenEntityId)
+token.owner = event.params.to
+token.isOriginal = true 
+token.isSharedInstance = false
+
+token.save()
+
+}
 
 //TODO remove this
 //Comment this when deploying graph to hosted service as described in https://thegraph.com/docs/en/developer/matchstick/

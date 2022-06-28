@@ -8,8 +8,13 @@ type ExampleEntity @entity {
 type ShareableToken @entity {
   id: ID!
   owner: Bytes! # address
-  sharedBy: [Bytes!]! # address - open sharing
+  isOriginal: Boolean! #token is original minted by the project admin
+  isSharedInstance: Boolean! #token was shared by the token owner with a 3rd person
+  
+  tokenId: BigInt
+  parentTokenId: BigInt
   sharedWith: [Bytes!]! # address - permissioned sharing
+  
 }
 
 

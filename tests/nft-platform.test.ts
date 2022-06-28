@@ -2,46 +2,63 @@ import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum'
 import { Address, BigInt } from '@graphprotocol/graph-ts/common/numbers'
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as/assembly/index'
 import { ShareableToken } from '../generated/schema'
-import { Share } from '../generated/ShareableERC721_Streamr/ShareableERC721_Streamr'
-import { getTokenEntityId, handleShare } from '../src/mapping'
+import { Mint, Share } from '../generated/ShareableERC721/ShareableERC721'
+import { getTokenEntityId, handleMint, handleShare } from '../src/mapping'
 
-  test('Can call mappings with custom events', () => {
-    // Initialise
-    let shareableToken1 = new ShareableToken('id1')
+
+  const address1 = '0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'
+  const address2 = '0x79205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'
+
+  test('can create newly minted token', () => {
+   
+    /*let shareableToken1 = new ShareableToken('id1')
     shareableToken1.owner = Address.fromString('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7')
     shareableToken1.sharedBy.push(Address.fromString('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'))
     shareableToken1.sharedBy.push(Address.fromString('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'))
 
     shareableToken1.save()
+*/
+  
+    const mintEvent = createMintEvent(address1, 1)
+    handleMint(mintEvent)
 
-    // Call mappings
-    let shareEvent1 = createNewShareEvent('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7', '0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7', 1)
-
-    let shareEvent2 = createNewShareEvent('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7', '0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7', 2)
-
-    handleShares([shareEvent1, shareEvent2])
-
-    assert.fieldEquals('ShareableToken', 'id1', 'owner', '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7')
-    assert.fieldEquals('ShareableToken', getTokenEntityId( bigInt('1'),shareEvent1.address.toHexString()), 'sharedBy', '[0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7, 0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7]')
-    assert.fieldEquals('ShareableToken', getTokenEntityId( bigInt('1'),shareEvent1.address.toHexString()), 'owner', shareEvent1.address.toHexString())
-    assert.fieldEquals('ShareableToken', getTokenEntityId( bigInt('2'),shareEvent2.address.toHexString()), 'owner', shareEvent2.address.toHexString())
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'owner', address1.toLowerCase())
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isOriginal', 'true')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isSharedInstance', 'false')
+    //assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), mintEvent.tokenId ), 'sharedBy', '[0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7, 0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7]')
+   
 
     clearStore()
   })
 
-  test('Next test', () => {
-    //...
-  })
+  test('minted token can be shared', () => {
+    const mintEvent = createMintEvent(address1, 1)
+    handleMint(mintEvent)
 
+    const shareEvent = createShareEvent(address1, address2, 2, 1)
+    handleShare(shareEvent)
+
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'owner', address1.toLowerCase())
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isOriginal', 'true')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isSharedInstance', 'false')
+
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'owner', address2.toLowerCase())
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'isOriginal', 'false')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'isSharedInstance', 'true')
+
+    clearStore()
+
+  })
 
 function bigInt(i: string): BigInt {
   return BigInt.fromString(i);
 }
 
-function createNewShareEvent(
+function createShareEvent(
   fromAddress: string,
   toAddress: string,
-  tokenId: i32
+  tokenId: i32,
+  derivedFromTokenId: i32
 ): Share {
   let mockEvent = newMockEvent()
   let newShareEvent = new Share(
@@ -55,14 +72,40 @@ function createNewShareEvent(
   )
 
   let fromParam = new ethereum.EventParam('from', ethereum.Value.fromAddress(Address.fromString(fromAddress)))
-  let toParam = new ethereum.EventParam('to', ethereum.Value.fromAddress(Address.fromString(fromAddress)))
+  let toParam = new ethereum.EventParam('to', ethereum.Value.fromAddress(Address.fromString(toAddress)))
   let tokenIdParam = new ethereum.EventParam('tokenId', ethereum.Value.fromI32(tokenId))
+  let derivedFromTokenIdParam = new ethereum.EventParam('derivedFromTokenId', ethereum.Value.fromI32(derivedFromTokenId))
 
   newShareEvent.parameters.push(fromParam)
   newShareEvent.parameters.push(toParam)
   newShareEvent.parameters.push(tokenIdParam)
+  newShareEvent.parameters.push(derivedFromTokenIdParam)
 
   return newShareEvent
+}
+
+function createMintEvent(
+  toAddress: string,
+  tokenId: i32
+): Mint {
+  let mockEvent = newMockEvent()
+  let newMintEvent = new Mint(
+    mockEvent.address,
+    mockEvent.logIndex,
+    mockEvent.transactionLogIndex,
+    mockEvent.logType,
+    mockEvent.block,
+    mockEvent.transaction,
+    mockEvent.parameters
+  )
+
+  let toParam = new ethereum.EventParam('to', ethereum.Value.fromAddress(Address.fromString(toAddress)))
+  let tokenIdParam = new ethereum.EventParam('tokenId', ethereum.Value.fromI32(tokenId))
+
+  newMintEvent.parameters.push(toParam)
+  newMintEvent.parameters.push(tokenIdParam)
+
+  return newMintEvent
 }
 
 function handleShares(events: Share[]): void {

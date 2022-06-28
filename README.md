@@ -1,6 +1,10 @@
 # nft-share-platform-subgraph
 Subgraph implementation for contract indexing
 
+## Project setup
+`cd nft-share-platform-subgraph`
+`npm ci`
+
 ## How to run tests
 
 1. Run `npm run docker-build`
