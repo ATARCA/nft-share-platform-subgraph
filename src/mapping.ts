@@ -7,6 +7,9 @@ import {
   Share,
   Mint
 } from "../generated/ShareableERC721/ShareableERC721"
+import {
+  Like
+} from "../generated/LikeERC721/LikeERC721"
 import { ExampleEntity, ShareableToken } from "../generated/schema"
 
 export function handleApproval(event: Approval): void {
@@ -73,7 +76,8 @@ export function getTokenEntityId(contractAddress: String, tokenId: BigInt): stri
 
 export function handleShare(event: Share): void {
 
-  const newTokenEntityId = getTokenEntityId( event.address.toHex(), event.params.tokenId)
+  const contractAddress = event.address;
+  const newTokenEntityId = getTokenEntityId( contractAddress.toHex(), event.params.tokenId)
   const parentTokenEntityId = getTokenEntityId( event.address.toHex(), event.params.derivedFromTokenId)
   
   let parentToken = ShareableToken.load(parentTokenEntityId)
@@ -91,6 +95,8 @@ export function handleShare(event: Share): void {
   newToken.tokenId = event.params.tokenId
   newToken.isOriginal = false
   newToken.isSharedInstance = true
+  newToken.isLikeToken = false
+  newToken.contractAddress = contractAddress
 
   log.info('logging sharedBy event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
  
@@ -106,8 +112,37 @@ export function handleMint(event: Mint): void {
   token.ownerAddress = event.params.to
   token.isOriginal = true 
   token.isSharedInstance = false
+  token.isLikeToken = false
   token.tokenId = event.params.tokenId
+  token.contractAddress = contractAddress
 
   token.save()
 }
 
+export const shareTokenContractAddress = "0xe283Bd7c79188b594e9C19E9032ff365A37Cc4fF".toLowerCase() //TODO save and load this dynamically
+
+export function handleLike(event: Like): void {
+  const parentTokenEntityId = getTokenEntityId( shareTokenContractAddress, event.params.contributionTokenId)
+  let parentToken = ShareableToken.load(parentTokenEntityId)
+
+  if (!parentToken) {
+    parentToken = new ShareableToken(parentTokenEntityId)
+    log.critical('Token to be liked does not exist. TokenId {}', [parentTokenEntityId])
+  }
+
+  const contractAddress = event.address;
+  const tokenEntityId = getTokenEntityId(contractAddress.toHex(), event.params.likeTokenId)
+
+  const likeToken = new ShareableToken(tokenEntityId)
+
+  likeToken.ownerAddress = event.params.liker
+  likeToken.contractAddress = contractAddress
+  likeToken.isOriginal = false 
+  likeToken.isSharedInstance = false
+  likeToken.isLikeToken = true
+
+  likeToken.tokenId = event.params.likeTokenId
+  likeToken.likedParentToken = parentToken.id
+
+  likeToken.save()
+}

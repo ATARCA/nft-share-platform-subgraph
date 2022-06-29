@@ -10,16 +10,20 @@ type ExampleEntity @entity {
 type ShareableToken @entity {
   id: ID!
   ownerAddress: Bytes!
+  contractAddress: Bytes!
   isOriginal: Boolean! #token is original minted by the project admin
   isSharedInstance: Boolean! #token was shared by the parent token owner with a 3rd person
-  
+  isLikeToken: Boolean!
+
   
   tokenId: BigInt
   parentTokenId: BigInt
 
-  parentToken: ShareableToken 
+  parentToken: ShareableToken # parent token a permissioned shared token was derived from
   sharedChildTokens: [ShareableToken!]! @derivedFrom(field: "parentToken") # tokens from permissioned sharing
   
+  likedParentToken: ShareableToken
+  likeTokens: [ShareableToken!]! @derivedFrom(field: "likedParentToken") # tokens from that have liked this token
 }
 
 

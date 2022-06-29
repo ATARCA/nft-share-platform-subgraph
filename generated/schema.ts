@@ -81,8 +81,10 @@ export class ShareableToken extends Entity {
     this.set("id", Value.fromString(id));
 
     this.set("ownerAddress", Value.fromBytes(Bytes.empty()));
+    this.set("contractAddress", Value.fromBytes(Bytes.empty()));
     this.set("isOriginal", Value.fromBoolean(false));
     this.set("isSharedInstance", Value.fromBoolean(false));
+    this.set("isLikeToken", Value.fromBoolean(false));
   }
 
   save(): void {
@@ -120,6 +122,15 @@ export class ShareableToken extends Entity {
     this.set("ownerAddress", Value.fromBytes(value));
   }
 
+  get contractAddress(): Bytes {
+    let value = this.get("contractAddress");
+    return value!.toBytes();
+  }
+
+  set contractAddress(value: Bytes) {
+    this.set("contractAddress", Value.fromBytes(value));
+  }
+
   get isOriginal(): boolean {
     let value = this.get("isOriginal");
     return value!.toBoolean();
@@ -136,6 +147,15 @@ export class ShareableToken extends Entity {
 
   set isSharedInstance(value: boolean) {
     this.set("isSharedInstance", Value.fromBoolean(value));
+  }
+
+  get isLikeToken(): boolean {
+    let value = this.get("isLikeToken");
+    return value!.toBoolean();
+  }
+
+  set isLikeToken(value: boolean) {
+    this.set("isLikeToken", Value.fromBoolean(value));
   }
 
   get tokenId(): BigInt | null {
@@ -196,5 +216,31 @@ export class ShareableToken extends Entity {
 
   set sharedChildTokens(value: Array<string>) {
     this.set("sharedChildTokens", Value.fromStringArray(value));
+  }
+
+  get likedParentToken(): string | null {
+    let value = this.get("likedParentToken");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set likedParentToken(value: string | null) {
+    if (!value) {
+      this.unset("likedParentToken");
+    } else {
+      this.set("likedParentToken", Value.fromString(<string>value));
+    }
+  }
+
+  get likeTokens(): Array<string> {
+    let value = this.get("likeTokens");
+    return value!.toStringArray();
+  }
+
+  set likeTokens(value: Array<string>) {
+    this.set("likeTokens", Value.fromStringArray(value));
   }
 }

@@ -1,13 +1,17 @@
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum'
 import { Address, BigInt } from '@graphprotocol/graph-ts/common/numbers'
 import { clearStore, test, assert, newMockEvent } from 'matchstick-as/assembly/index'
+import { Like } from '../generated/LikeERC721/LikeERC721'
 import { ShareableToken } from '../generated/schema'
 import { Mint, Share } from '../generated/ShareableERC721/ShareableERC721'
-import { getTokenEntityId, handleMint, handleShare } from '../src/mapping'
+import { getTokenEntityId, handleLike, handleMint, handleShare, shareTokenContractAddress } from '../src/mapping'
 
 
   const address1 = '0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'
   const address2 = '0x79205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'
+  const address3 = '0x69205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'
+
+  const likeContractAddress = '0xFb6394BC5EeE2F9f00ab9df3c8c489A4647f0Daf'
 
   test('can create newly minted token', () => {
    
@@ -50,6 +54,45 @@ import { getTokenEntityId, handleMint, handleShare } from '../src/mapping'
 
   })
 
+  test('minted token can be liked', () => {
+    const mintEvent = createMintEvent(address1, 1)
+    handleMint(mintEvent)
+
+    const likeEvent = createLikeEvent(address2, address1, 2, 1)
+    handleLike(likeEvent)
+
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'ownerAddress', address2.toLowerCase())
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'tokenId', '2')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'isOriginal', 'false')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'isSharedInstance', 'false')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'isLikeToken', 'true')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'contractAddress', likeContractAddress.toLowerCase())
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'likedParentToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ))
+
+    clearStore()
+  })
+
+  test('shared token can be liked', () => {
+    const mintEvent = createMintEvent(address1, 1)
+    handleMint(mintEvent)
+
+    const shareEvent = createShareEvent(address1, address2, 2, 1)
+    handleShare(shareEvent)
+
+    const likeEvent = createLikeEvent(address3, address2, 3, 2)
+    handleLike(likeEvent)
+
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('3') ), 'ownerAddress', address3.toLowerCase())
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('3') ), 'tokenId', '3')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('3') ), 'isOriginal', 'false')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('3') ), 'isSharedInstance', 'false')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('3') ), 'isLikeToken', 'true')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('3') ), 'contractAddress', likeContractAddress.toLowerCase())
+    assert.fieldEquals('ShareableToken', getTokenEntityId( likeEvent.address.toHexString(), bigInt('3') ), 'likedParentToken', getTokenEntityId( shareEvent.address.toHexString(), bigInt('2') ))
+    clearStore()
+
+  })
+
 function bigInt(i: string): BigInt {
   return BigInt.fromString(i);
 }
@@ -62,7 +105,7 @@ function createShareEvent(
 ): Share {
   let mockEvent = newMockEvent()
   let newShareEvent = new Share(
-    mockEvent.address,
+    Address.fromString(shareTokenContractAddress),
     mockEvent.logIndex,
     mockEvent.transactionLogIndex,
     mockEvent.logType,
@@ -84,13 +127,43 @@ function createShareEvent(
   return newShareEvent
 }
 
+function createLikeEvent(
+  likerAddress: string,
+  likeeAddress: string,
+  likeTokenId: i32,
+  contributionTokenId: i32
+): Like {
+  let mockEvent = newMockEvent()
+  let newShareEvent = new Like(
+    Address.fromString(likeContractAddress),
+    mockEvent.logIndex,
+    mockEvent.transactionLogIndex,
+    mockEvent.logType,
+    mockEvent.block,
+    mockEvent.transaction,
+    mockEvent.parameters
+  )
+
+  let likerParam = new ethereum.EventParam('liker', ethereum.Value.fromAddress(Address.fromString(likerAddress)))
+  let likeeParam = new ethereum.EventParam('likee', ethereum.Value.fromAddress(Address.fromString(likeeAddress)))
+  let likeTokenIdParam = new ethereum.EventParam('likeTokenId', ethereum.Value.fromI32(likeTokenId))
+  let contributionTokenIdParam = new ethereum.EventParam('contributionTokenId', ethereum.Value.fromI32(contributionTokenId))
+
+  newShareEvent.parameters.push(likerParam)
+  newShareEvent.parameters.push(likeeParam)
+  newShareEvent.parameters.push(likeTokenIdParam)
+  newShareEvent.parameters.push(contributionTokenIdParam)
+
+  return newShareEvent
+}
+
 function createMintEvent(
   toAddress: string,
   tokenId: i32
 ): Mint {
   let mockEvent = newMockEvent()
   let newMintEvent = new Mint(
-    mockEvent.address,
+    Address.fromString(shareTokenContractAddress),
     mockEvent.logIndex,
     mockEvent.transactionLogIndex,
     mockEvent.logType,
