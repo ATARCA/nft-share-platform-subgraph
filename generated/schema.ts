@@ -80,10 +80,9 @@ export class ShareableToken extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("owner", Value.fromBytes(Bytes.empty()));
+    this.set("ownerAddress", Value.fromBytes(Bytes.empty()));
     this.set("isOriginal", Value.fromBoolean(false));
     this.set("isSharedInstance", Value.fromBoolean(false));
-    this.set("sharedWith", Value.fromBytesArray(new Array(0)));
   }
 
   save(): void {
@@ -112,13 +111,13 @@ export class ShareableToken extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get owner(): Bytes {
-    let value = this.get("owner");
+  get ownerAddress(): Bytes {
+    let value = this.get("ownerAddress");
     return value!.toBytes();
   }
 
-  set owner(value: Bytes) {
-    this.set("owner", Value.fromBytes(value));
+  set ownerAddress(value: Bytes) {
+    this.set("ownerAddress", Value.fromBytes(value));
   }
 
   get isOriginal(): boolean {
@@ -173,12 +172,29 @@ export class ShareableToken extends Entity {
     }
   }
 
-  get sharedWith(): Array<Bytes> {
-    let value = this.get("sharedWith");
-    return value!.toBytesArray();
+  get parentToken(): string | null {
+    let value = this.get("parentToken");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
   }
 
-  set sharedWith(value: Array<Bytes>) {
-    this.set("sharedWith", Value.fromBytesArray(value));
+  set parentToken(value: string | null) {
+    if (!value) {
+      this.unset("parentToken");
+    } else {
+      this.set("parentToken", Value.fromString(<string>value));
+    }
+  }
+
+  get sharedChildTokens(): Array<string> {
+    let value = this.get("sharedChildTokens");
+    return value!.toStringArray();
+  }
+
+  set sharedChildTokens(value: Array<string>) {
+    this.set("sharedChildTokens", Value.fromStringArray(value));
   }
 }

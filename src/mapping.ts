@@ -70,11 +70,6 @@ export function getTokenEntityId(contractAddress: String, tokenId: BigInt): stri
 //next- listen to multiple contracts
 //next- template for different networks
 
-//steps for project setup for others:
-//cd nft-share-platform-ropsten-subgraph
-//npm ci
-//(to run tests )install docker + https://github.com/LimeChain/matchstick/blob/main/README.md#quick-start-
-
 
 export function handleShare(event: Share): void {
 
@@ -90,38 +85,29 @@ export function handleShare(event: Share): void {
 
   const newToken = new ShareableToken(newTokenEntityId)
 
-  newToken.owner = event.params.to
+  newToken.ownerAddress = event.params.to
   newToken.parentTokenId = event.params.derivedFromTokenId
+  newToken.parentToken = parentToken.id
   newToken.tokenId = event.params.tokenId
   newToken.isOriginal = false
   newToken.isSharedInstance = true
 
   log.info('logging sharedBy event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
  
-
-  const sharedWith = parentToken.sharedWith
-  sharedWith.push(event.params.to)
-  parentToken.sharedWith = sharedWith
-
-
   newToken.save()
   parentToken.save()
 }
 
 export function handleMint(event: Mint): void {
+  const contractAddress = event.address;
+  const tokenEntityId = getTokenEntityId(contractAddress.toHex(), event.params.tokenId)
 
-const contractAddress = event.address;
-const tokenEntityId = getTokenEntityId(contractAddress.toHex(), event.params.tokenId)
+  const token = new ShareableToken(tokenEntityId)
+  token.ownerAddress = event.params.to
+  token.isOriginal = true 
+  token.isSharedInstance = false
+  token.tokenId = event.params.tokenId
 
-const token = new ShareableToken(tokenEntityId)
-token.owner = event.params.to
-token.isOriginal = true 
-token.isSharedInstance = false
-
-token.save()
-
+  token.save()
 }
 
-//TODO remove this
-//Comment this when deploying graph to hosted service as described in https://thegraph.com/docs/en/developer/matchstick/
-//export { runTests } from "../tests/nft-platform.test";

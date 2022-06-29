@@ -12,7 +12,7 @@ import { getTokenEntityId, handleMint, handleShare } from '../src/mapping'
   test('can create newly minted token', () => {
    
     /*let shareableToken1 = new ShareableToken('id1')
-    shareableToken1.owner = Address.fromString('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7')
+    shareableToken1.ownerAddress = Address.fromString('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7')
     shareableToken1.sharedBy.push(Address.fromString('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'))
     shareableToken1.sharedBy.push(Address.fromString('0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'))
 
@@ -22,11 +22,10 @@ import { getTokenEntityId, handleMint, handleShare } from '../src/mapping'
     const mintEvent = createMintEvent(address1, 1)
     handleMint(mintEvent)
 
-    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'owner', address1.toLowerCase())
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'ownerAddress', address1.toLowerCase())
     assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isOriginal', 'true')
     assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isSharedInstance', 'false')
-    //assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), mintEvent.tokenId ), 'sharedBy', '[0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7, 0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7]')
-   
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'tokenId', '1')   
 
     clearStore()
   })
@@ -38,13 +37,14 @@ import { getTokenEntityId, handleMint, handleShare } from '../src/mapping'
     const shareEvent = createShareEvent(address1, address2, 2, 1)
     handleShare(shareEvent)
 
-    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'owner', address1.toLowerCase())
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'ownerAddress', address1.toLowerCase())
     assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isOriginal', 'true')
     assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isSharedInstance', 'false')
 
-    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'owner', address2.toLowerCase())
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'ownerAddress', address2.toLowerCase())
     assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'isOriginal', 'false')
     assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'isSharedInstance', 'true')
+    assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'parentToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ),)
 
     clearStore()
 
