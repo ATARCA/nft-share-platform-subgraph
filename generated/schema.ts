@@ -80,9 +80,11 @@ export class ShareableToken extends Entity {
     super();
     this.set("id", Value.fromString(id));
 
-    this.set("owner", Value.fromBytes(Bytes.empty()));
-    this.set("sharedBy", Value.fromBytesArray(new Array(0)));
-    this.set("sharedWith", Value.fromBytesArray(new Array(0)));
+    this.set("ownerAddress", Value.fromBytes(Bytes.empty()));
+    this.set("contractAddress", Value.fromBytes(Bytes.empty()));
+    this.set("isOriginal", Value.fromBoolean(false));
+    this.set("isSharedInstance", Value.fromBoolean(false));
+    this.set("isLikeToken", Value.fromBoolean(false));
   }
 
   save(): void {
@@ -111,30 +113,134 @@ export class ShareableToken extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get owner(): Bytes {
-    let value = this.get("owner");
+  get ownerAddress(): Bytes {
+    let value = this.get("ownerAddress");
     return value!.toBytes();
   }
 
-  set owner(value: Bytes) {
-    this.set("owner", Value.fromBytes(value));
+  set ownerAddress(value: Bytes) {
+    this.set("ownerAddress", Value.fromBytes(value));
   }
 
-  get sharedBy(): Array<Bytes> {
-    let value = this.get("sharedBy");
-    return value!.toBytesArray();
+  get contractAddress(): Bytes {
+    let value = this.get("contractAddress");
+    return value!.toBytes();
   }
 
-  set sharedBy(value: Array<Bytes>) {
-    this.set("sharedBy", Value.fromBytesArray(value));
+  set contractAddress(value: Bytes) {
+    this.set("contractAddress", Value.fromBytes(value));
   }
 
-  get sharedWith(): Array<Bytes> {
-    let value = this.get("sharedWith");
-    return value!.toBytesArray();
+  get isOriginal(): boolean {
+    let value = this.get("isOriginal");
+    return value!.toBoolean();
   }
 
-  set sharedWith(value: Array<Bytes>) {
-    this.set("sharedWith", Value.fromBytesArray(value));
+  set isOriginal(value: boolean) {
+    this.set("isOriginal", Value.fromBoolean(value));
+  }
+
+  get isSharedInstance(): boolean {
+    let value = this.get("isSharedInstance");
+    return value!.toBoolean();
+  }
+
+  set isSharedInstance(value: boolean) {
+    this.set("isSharedInstance", Value.fromBoolean(value));
+  }
+
+  get isLikeToken(): boolean {
+    let value = this.get("isLikeToken");
+    return value!.toBoolean();
+  }
+
+  set isLikeToken(value: boolean) {
+    this.set("isLikeToken", Value.fromBoolean(value));
+  }
+
+  get tokenId(): BigInt | null {
+    let value = this.get("tokenId");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set tokenId(value: BigInt | null) {
+    if (!value) {
+      this.unset("tokenId");
+    } else {
+      this.set("tokenId", Value.fromBigInt(<BigInt>value));
+    }
+  }
+
+  get parentTokenId(): BigInt | null {
+    let value = this.get("parentTokenId");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set parentTokenId(value: BigInt | null) {
+    if (!value) {
+      this.unset("parentTokenId");
+    } else {
+      this.set("parentTokenId", Value.fromBigInt(<BigInt>value));
+    }
+  }
+
+  get parentToken(): string | null {
+    let value = this.get("parentToken");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set parentToken(value: string | null) {
+    if (!value) {
+      this.unset("parentToken");
+    } else {
+      this.set("parentToken", Value.fromString(<string>value));
+    }
+  }
+
+  get sharedChildTokens(): Array<string> {
+    let value = this.get("sharedChildTokens");
+    return value!.toStringArray();
+  }
+
+  set sharedChildTokens(value: Array<string>) {
+    this.set("sharedChildTokens", Value.fromStringArray(value));
+  }
+
+  get likedParentToken(): string | null {
+    let value = this.get("likedParentToken");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set likedParentToken(value: string | null) {
+    if (!value) {
+      this.unset("likedParentToken");
+    } else {
+      this.set("likedParentToken", Value.fromString(<string>value));
+    }
+  }
+
+  get likeTokens(): Array<string> {
+    let value = this.get("likeTokens");
+    return value!.toStringArray();
+  }
+
+  set likeTokens(value: Array<string>) {
+    this.set("likeTokens", Value.fromStringArray(value));
   }
 }

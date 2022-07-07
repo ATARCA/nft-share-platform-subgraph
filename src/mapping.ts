@@ -1,12 +1,15 @@
 import { BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 import {
-  ShareableERC721_Streamr,
+  ShareableERC721,
   Approval,
   ApprovalForAll,
   OwnershipTransferred,
   Share,
-  Transfer
-} from "../generated/ShareableERC721_Streamr/ShareableERC721_Streamr"
+  Mint
+} from "../generated/ShareableERC721/ShareableERC721"
+import {
+  Like
+} from "../generated/LikeERC721/LikeERC721"
 import { ExampleEntity, ShareableToken } from "../generated/schema"
 
 export function handleApproval(event: Approval): void {
@@ -63,44 +66,83 @@ export function handleApprovalForAll(event: ApprovalForAll): void {}
 
 export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
 
-export function getTokenEntityId(tokenId: BigInt, contractAddress: String): string {
-  return `${tokenId}-${contractAddress}`
+export function getTokenEntityId(contractAddress: String, tokenId: BigInt): string {
+  return `${contractAddress.toLowerCase()}-${tokenId}`
 }
-
 
 //next- listen to multiple contracts
 //next- template for different networks
 
-//steps for project setup for others:
-//cd nft-share-platform-ropsten-subgraph
-//npm ci
-//(to run tests )install docker + https://github.com/LimeChain/matchstick/blob/main/README.md#quick-start-
 
 export function handleShare(event: Share): void {
 
-  const tokenEntityId = getTokenEntityId(event.params.tokenId, event.address.toHex())
-  let token = ShareableToken.load(tokenEntityId)
+  const contractAddress = event.address;
+  const newTokenEntityId = getTokenEntityId( contractAddress.toHex(), event.params.tokenId)
+  const parentTokenEntityId = getTokenEntityId( event.address.toHex(), event.params.derivedFromTokenId)
+  
+  let parentToken = ShareableToken.load(parentTokenEntityId)
 
-  if (!token) {
-    token = new ShareableToken(tokenEntityId)
+  if (!parentToken) {
+    parentToken = new ShareableToken(parentTokenEntityId)
+    log.critical('Shared token does not exist. Event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
   }
 
+  const newToken = new ShareableToken(newTokenEntityId)
+
+  newToken.ownerAddress = event.params.to
+  newToken.parentTokenId = event.params.derivedFromTokenId
+  newToken.parentToken = parentToken.id
+  newToken.tokenId = event.params.tokenId
+  newToken.isOriginal = false
+  newToken.isSharedInstance = true
+  newToken.isLikeToken = false
+  newToken.contractAddress = contractAddress
+
   log.info('logging sharedBy event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
-  log.info('sharedByBefore size {}',[token.sharedBy.length.toString()])
-  token.owner = event.address
+ 
+  newToken.save()
+  parentToken.save()
+}
 
-  const sharedBy = token.sharedBy
-  sharedBy.push(event.params.to)
-  sharedBy.push(event.params.to)
+export function handleMint(event: Mint): void {
+  const contractAddress = event.address;
+  const tokenEntityId = getTokenEntityId(contractAddress.toHex(), event.params.tokenId)
 
-  token.sharedBy = sharedBy
-  log.info('sharedByAfter size {}',[token.sharedBy.length.toString()])
+  const token = new ShareableToken(tokenEntityId)
+  token.ownerAddress = event.params.to
+  token.isOriginal = true 
+  token.isSharedInstance = false
+  token.isLikeToken = false
+  token.tokenId = event.params.tokenId
+  token.contractAddress = contractAddress
 
   token.save()
 }
 
-export function handleTransfer(event: Transfer): void {}
+export const shareTokenContractAddress = "0xe283Bd7c79188b594e9C19E9032ff365A37Cc4fF".toLowerCase() //TODO save and load this dynamically
 
-//TODO remove this
-//Comment this when deploying graph to hosted service as described in https://thegraph.com/docs/en/developer/matchstick/
-//export { runTests } from "../tests/nft-platform.test";
+export function handleLike(event: Like): void {
+  const parentTokenEntityId = getTokenEntityId( shareTokenContractAddress, event.params.contributionTokenId)
+  let parentToken = ShareableToken.load(parentTokenEntityId)
+
+  if (!parentToken) {
+    parentToken = new ShareableToken(parentTokenEntityId)
+    log.critical('Token to be liked does not exist. TokenId {}', [parentTokenEntityId])
+  }
+
+  const contractAddress = event.address;
+  const tokenEntityId = getTokenEntityId(contractAddress.toHex(), event.params.likeTokenId)
+
+  const likeToken = new ShareableToken(tokenEntityId)
+
+  likeToken.ownerAddress = event.params.liker
+  likeToken.contractAddress = contractAddress
+  likeToken.isOriginal = false 
+  likeToken.isSharedInstance = false
+  likeToken.isLikeToken = true
+
+  likeToken.tokenId = event.params.likeTokenId
+  likeToken.likedParentToken = parentToken.id
+
+  likeToken.save()
+}

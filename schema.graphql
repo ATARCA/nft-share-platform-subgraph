@@ -5,11 +5,25 @@ type ExampleEntity @entity {
   approved: Bytes! # address
 }
 
+#TODO add entity for project and make 1 to N relation with tokens
+
 type ShareableToken @entity {
   id: ID!
-  owner: Bytes! # address
-  sharedBy: [Bytes!]! # address - open sharing
-  sharedWith: [Bytes!]! # address - permissioned sharing
+  ownerAddress: Bytes!
+  contractAddress: Bytes!
+  isOriginal: Boolean! #token is original minted by the project admin
+  isSharedInstance: Boolean! #token was shared by the parent token owner with a 3rd person
+  isLikeToken: Boolean!
+
+  
+  tokenId: BigInt
+  parentTokenId: BigInt
+
+  parentToken: ShareableToken # parent token a permissioned shared token was derived from
+  sharedChildTokens: [ShareableToken!]! @derivedFrom(field: "parentToken") # tokens from permissioned sharing
+  
+  likedParentToken: ShareableToken
+  likeTokens: [ShareableToken!]! @derivedFrom(field: "likedParentToken") # tokens from that have liked this token
 }
 
 
