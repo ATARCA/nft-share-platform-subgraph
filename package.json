@@ -9,7 +9,7 @@
     "remove-local": "graph remove --node http://localhost:8020/ atarca/nft-share-platform-ropsten",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 atarca/nft-share-platform-ropsten",
     "docker-build": "docker build -t matchstick .",
-    "test": "docker run -it --rm --mount type=bind,source=C:/streamr/atarca/nft-share-platform-subgraph,target=/matchstick matchstick"
+    "test": "docker run -it --rm --mount type=bind,source=<absolute/path/to/project>,target=/matchstick matchstick"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "0.26.0",
