@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
-  "contractName": "project_contributions",
-  "sourceName": "contracts/LikeERC721.sol",
+  "contractName": "IShareableERC721",
+  "sourceName": "contracts/Helpers.sol",
   "abi": [
     {
       "anonymous": false,
