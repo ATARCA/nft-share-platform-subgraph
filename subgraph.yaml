@@ -3,6 +3,30 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
+    name: TalkoFactory
+    network: ropsten
+    source:
+      address: "0xe283Bd7c79188b594e9C19E9032ff365A37Cc4fF"
+      abi: TalkoFactory
+      startBlock: 12474830
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Project
+      abis:
+        - name: TalkoFactory
+          file: ./abis/TalkoFactory.sol/TalkoFactory.json
+      eventHandlers:
+        - event: ShareableERC721ProxyCreated(indexed address,indexed address,indexed string,string)
+          handler: handleShareableERC721ContractCreated
+        - event: LikeERC721ProxyCreated(indexed address,indexed address,indexed string,string)
+          handler: handleLikeERC721ContractCreated
+        - event: EndorseERC721ProxyCreated(indexed address,indexed address,indexed string,string)
+          handler: handleEndorseERC721ContractCreated
+      file: ./src/mapping.ts
+  - kind: ethereum
     name: ShareableERC721
     network: ropsten
     source:
@@ -21,7 +45,7 @@ dataSources:
       eventHandlers:
         - event: Share(indexed address,indexed address,indexed uint256,uint256)
           handler: handleShare
-        - event: Mint(indexed address,indexed uint256)
+        - event: Mint(indexed address,indexed address,indexed uint256)
           handler: handleMint
       file: ./src/mapping.ts
   - kind: ethereum

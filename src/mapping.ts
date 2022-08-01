@@ -3,15 +3,15 @@ import {
   ShareableERC721,
   Approval,
   ApprovalForAll,
-  OwnershipTransferred,
   Share,
   Mint
 } from "../generated/ShareableERC721/ShareableERC721"
-import {
-  Like
-} from "../generated/LikeERC721/LikeERC721"
-import { ExampleEntity, ShareableToken } from "../generated/schema"
+import { Like } from "../generated/LikeERC721/LikeERC721"
+import { EndorseERC721ProxyCreated, LikeERC721ProxyCreated, ShareableERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
+import { ExampleEntity, Project, ShareableToken } from "../generated/schema"
 
+
+//TODO remove this demo code
 export function handleApproval(event: Approval): void {
   // Entities can be loaded from the store using a string ID; this ID
   // needs to be unique across all entities of the same type
@@ -64,15 +64,47 @@ export function handleApproval(event: Approval): void {
 
 export function handleApprovalForAll(event: ApprovalForAll): void {}
 
-export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
-
 export function getTokenEntityId(contractAddress: String, tokenId: BigInt): string {
   return `${contractAddress.toLowerCase()}-${tokenId}`
 }
 
-//next- listen to multiple contracts
-//next- template for different networks
+export function handleShareableERC721ContractCreated(event: ShareableERC721ProxyCreated): void {
+  let project = Project.load(event.params._name.toString())
 
+  if (!project) {
+    project = new Project(event.params._name.toString())
+  }
+
+  project.shareableContractAddress = event.params._sproxy
+  project.owner = event.params._creator
+  project.save()
+}
+
+export function handleLikeERC721ContractCreated(event: LikeERC721ProxyCreated): void {
+  let project = Project.load(event.params._name.toString())
+
+  if (!project) {
+    project = new Project(event.params._name.toString())
+  }
+
+  project.likeContractAddress = event.params._sproxy
+  project.save()
+}
+
+export function handleEndorseERC721ContractCreated(event: EndorseERC721ProxyCreated): void {
+  let project = Project.load(event.params._name.toString())
+
+  if (!project) {
+    project = new Project(event.params._name.toString())
+  }
+
+  project.endorseContractAddress = event.params._sproxy
+  project.save()
+}
+
+
+//TODO implement burning - transfer to zero address is burning
+//TODO add dynamic data sources https://forum.thegraph.com/t/developer-highlights-1-future-proofing-your-subgraph-with-dynamic-data-sources/1821
 
 export function handleShare(event: Share): void {
 

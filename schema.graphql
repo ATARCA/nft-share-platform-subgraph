@@ -7,6 +7,14 @@ type ExampleEntity @entity {
 
 #TODO add entity for project and make 1 to N relation with tokens
 
+type Project @entity {
+  id: ID! #project name
+  owner: Bytes! # address
+  shareableContractAddress: Bytes!
+  likeContractAddress: Bytes!
+  endorseContractAddress: Bytes!
+}
+
 type ShareableToken @entity {
   id: ID!
   ownerAddress: Bytes!
