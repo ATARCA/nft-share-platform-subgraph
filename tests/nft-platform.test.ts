@@ -1,11 +1,14 @@
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum'
 import { Address, BigInt } from '@graphprotocol/graph-ts/common/numbers'
-import { clearStore, test, assert, newMockEvent } from 'matchstick-as/assembly/index'
-import { Like } from '../generated/LikeERC721/LikeERC721'
+import { clearStore, test, assert, newMockEvent, createMockedFunction } from 'matchstick-as/assembly/index'
+import { Like } from '../generated/templates/LikeERC721TemplateDataSource/LikeERC721'
 import { ShareableToken } from '../generated/schema'
-import { Mint, Share } from '../generated/ShareableERC721/ShareableERC721'
-import { getTokenEntityId, handleLike, handleMint, handleShare, shareTokenContractAddress } from '../src/mapping'
+import { Mint, Share } from '../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721'
+import { getTokenEntityId, handleLike, handleMint, handleShare } from '../src/mapping'
 
+  const shareTokenContractAddress = "0xe283Bd7c79188b594e9C19E9032ff365A37Cc4fF".toLowerCase()
+
+  const ownerAddress = '0xA86cb4378Cdbc327eF950789c81BcBcc3aa73D21'
 
   const address1 = '0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'
   const address2 = '0x79205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'
@@ -23,7 +26,7 @@ import { getTokenEntityId, handleLike, handleMint, handleShare, shareTokenContra
     shareableToken1.save()
 */
   
-    const mintEvent = createMintEvent(address1, 1)
+    const mintEvent = createMintEvent(ownerAddress, address1, 1)
     handleMint(mintEvent)
 
     assert.fieldEquals('ShareableToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'ownerAddress', address1.toLowerCase())
@@ -35,7 +38,7 @@ import { getTokenEntityId, handleLike, handleMint, handleShare, shareTokenContra
   })
 
   test('minted token can be shared', () => {
-    const mintEvent = createMintEvent(address1, 1)
+    const mintEvent = createMintEvent(ownerAddress, address1, 1)
     handleMint(mintEvent)
 
     const shareEvent = createShareEvent(address1, address2, 2, 1)
@@ -55,7 +58,9 @@ import { getTokenEntityId, handleLike, handleMint, handleShare, shareTokenContra
   })
 
   test('minted token can be liked', () => {
-    const mintEvent = createMintEvent(address1, 1)
+    mockLikeContractProjectAddress(shareTokenContractAddress)
+
+    const mintEvent = createMintEvent(ownerAddress, address1, 1)
     handleMint(mintEvent)
 
     const likeEvent = createLikeEvent(address2, address1, 2, 1)
@@ -73,7 +78,9 @@ import { getTokenEntityId, handleLike, handleMint, handleShare, shareTokenContra
   })
 
   test('shared token can be liked', () => {
-    const mintEvent = createMintEvent(address1, 1)
+    mockLikeContractProjectAddress(shareTokenContractAddress)
+
+    const mintEvent = createMintEvent(ownerAddress, address1, 1)
     handleMint(mintEvent)
 
     const shareEvent = createShareEvent(address1, address2, 2, 1)
@@ -95,6 +102,12 @@ import { getTokenEntityId, handleLike, handleMint, handleShare, shareTokenContra
 
 function bigInt(i: string): BigInt {
   return BigInt.fromString(i);
+}
+
+function mockLikeContractProjectAddress(projectAddress: string): void {
+  createMockedFunction(Address.fromString(likeContractAddress),"getProjectAddress",
+  "getProjectAddress():(address)")
+  .returns([ethereum.Value.fromAddress(Address.fromString(shareTokenContractAddress))])
 }
 
 function createShareEvent(
@@ -158,6 +171,7 @@ function createLikeEvent(
 }
 
 function createMintEvent(
+  fromAddress: string,
   toAddress: string,
   tokenId: i32
 ): Mint {
@@ -172,9 +186,11 @@ function createMintEvent(
     mockEvent.parameters
   )
 
+  let fromParam = new ethereum.EventParam('from', ethereum.Value.fromAddress(Address.fromString(fromAddress)))
   let toParam = new ethereum.EventParam('to', ethereum.Value.fromAddress(Address.fromString(toAddress)))
   let tokenIdParam = new ethereum.EventParam('tokenId', ethereum.Value.fromI32(tokenId))
 
+  newMintEvent.parameters.push(fromParam)
   newMintEvent.parameters.push(toParam)
   newMintEvent.parameters.push(tokenIdParam)
 

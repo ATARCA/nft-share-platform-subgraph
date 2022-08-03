@@ -1,15 +1,15 @@
-import { BigInt, Bytes, log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 import {
-  ShareableERC721,
   Approval,
   ApprovalForAll,
   Share,
   Mint
-} from "../generated/ShareableERC721/ShareableERC721"
-import { Like } from "../generated/LikeERC721/LikeERC721"
+} from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
+import { Like, LikeERC721 } from "../generated/templates/LikeERC721TemplateDataSource/LikeERC721"
+import { Endorse } from "../generated/templates/EndorseERC721TemplateDataSource/EndorseERC721"
 import { EndorseERC721ProxyCreated, LikeERC721ProxyCreated, ShareableERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
 import { ExampleEntity, Project, ShareableToken } from "../generated/schema"
-
+import { ShareableERC721TemplateDataSource, LikeERC721TemplateDataSource, EndorseERC721TemplateDataSource } from '../generated/templates'
 
 //TODO remove this demo code
 export function handleApproval(event: Approval): void {
@@ -68,49 +68,63 @@ export function getTokenEntityId(contractAddress: String, tokenId: BigInt): stri
   return `${contractAddress.toLowerCase()}-${tokenId}`
 }
 
+export function getTokenEntityIdFromAddress(contractAddress: Address, tokenId: BigInt): string {
+  return getTokenEntityId(contractAddress.toHex(), tokenId)
+}
+
 export function handleShareableERC721ContractCreated(event: ShareableERC721ProxyCreated): void {
-  let project = Project.load(event.params._name.toString())
+  const projectName = event.params._name.toString()
+  let project = Project.load(projectName)
 
   if (!project) {
-    project = new Project(event.params._name.toString())
+    project = new Project(projectName)
   }
 
   project.shareableContractAddress = event.params._sproxy
   project.owner = event.params._creator
   project.save()
+
+  ShareableERC721TemplateDataSource.create(event.params._sproxy)
 }
 
 export function handleLikeERC721ContractCreated(event: LikeERC721ProxyCreated): void {
-  let project = Project.load(event.params._name.toString())
+  const projectName = event.params._name.toString()
+
+  let project = Project.load(projectName)
 
   if (!project) {
-    project = new Project(event.params._name.toString())
+    project = new Project(projectName)
   }
 
   project.likeContractAddress = event.params._sproxy
   project.save()
+
+  LikeERC721TemplateDataSource.create(event.params._sproxy)
 }
 
 export function handleEndorseERC721ContractCreated(event: EndorseERC721ProxyCreated): void {
-  let project = Project.load(event.params._name.toString())
+  const projectName = event.params._name.toString()
+
+  let project = Project.load(projectName)
 
   if (!project) {
-    project = new Project(event.params._name.toString())
+    project = new Project(projectName)
   }
 
   project.endorseContractAddress = event.params._sproxy
   project.save()
+
+  EndorseERC721TemplateDataSource.create(event.params._sproxy)
 }
 
-
 //TODO implement burning - transfer to zero address is burning
-//TODO add dynamic data sources https://forum.thegraph.com/t/developer-highlights-1-future-proofing-your-subgraph-with-dynamic-data-sources/1821
 
 export function handleShare(event: Share): void {
 
-  const contractAddress = event.address;
-  const newTokenEntityId = getTokenEntityId( contractAddress.toHex(), event.params.tokenId)
-  const parentTokenEntityId = getTokenEntityId( event.address.toHex(), event.params.derivedFromTokenId)
+  const shareContractAddress = event.address;
+  
+  const newTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.tokenId)
+  const parentTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.derivedFromTokenId)
   
   let parentToken = ShareableToken.load(parentTokenEntityId)
 
@@ -128,7 +142,7 @@ export function handleShare(event: Share): void {
   newToken.isOriginal = false
   newToken.isSharedInstance = true
   newToken.isLikeToken = false
-  newToken.contractAddress = contractAddress
+  newToken.contractAddress = shareContractAddress
 
   log.info('logging sharedBy event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
  
@@ -137,8 +151,8 @@ export function handleShare(event: Share): void {
 }
 
 export function handleMint(event: Mint): void {
-  const contractAddress = event.address;
-  const tokenEntityId = getTokenEntityId(contractAddress.toHex(), event.params.tokenId)
+  const shareContractAddress = event.address;
+  const tokenEntityId = getTokenEntityIdFromAddress(shareContractAddress, event.params.tokenId)
 
   const token = new ShareableToken(tokenEntityId)
   token.ownerAddress = event.params.to
@@ -146,15 +160,18 @@ export function handleMint(event: Mint): void {
   token.isSharedInstance = false
   token.isLikeToken = false
   token.tokenId = event.params.tokenId
-  token.contractAddress = contractAddress
+  token.contractAddress = shareContractAddress
 
   token.save()
 }
 
-export const shareTokenContractAddress = "0xe283Bd7c79188b594e9C19E9032ff365A37Cc4fF".toLowerCase() //TODO save and load this dynamically
-
 export function handleLike(event: Like): void {
-  const parentTokenEntityId = getTokenEntityId( shareTokenContractAddress, event.params.contributionTokenId)
+
+  const likeContractAddress = event.address;
+  const likeContract = LikeERC721.bind(likeContractAddress)
+  const shareContractAddress = likeContract.getProjectAddress()
+
+  const parentTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.contributionTokenId)
   let parentToken = ShareableToken.load(parentTokenEntityId)
 
   if (!parentToken) {
@@ -162,13 +179,12 @@ export function handleLike(event: Like): void {
     log.critical('Token to be liked does not exist. TokenId {}', [parentTokenEntityId])
   }
 
-  const contractAddress = event.address;
-  const tokenEntityId = getTokenEntityId(contractAddress.toHex(), event.params.likeTokenId)
+  const tokenEntityId = getTokenEntityIdFromAddress(likeContractAddress, event.params.likeTokenId)
 
   const likeToken = new ShareableToken(tokenEntityId)
 
   likeToken.ownerAddress = event.params.liker
-  likeToken.contractAddress = contractAddress
+  likeToken.contractAddress = likeContractAddress
   likeToken.isOriginal = false 
   likeToken.isSharedInstance = false
   likeToken.isLikeToken = true
@@ -177,4 +193,7 @@ export function handleLike(event: Like): void {
   likeToken.likedParentToken = parentToken.id
 
   likeToken.save()
+}
+
+export function handleEndorse(event: Endorse): void {
 }

@@ -28,7 +28,7 @@ dataSources:
       file: ./src/mapping.ts
 templates:
   - kind: ethereum
-    name: ShareableERC721
+    name: ShareableERC721TemplateDataSource
     network: ropsten
     source:
       abi: ShareableERC721
@@ -48,7 +48,7 @@ templates:
           handler: handleMint
       file: ./src/mapping.ts
   - kind: ethereum
-    name: LikeERC721
+    name: LikeERC721TemplateDataSource
     network: ropsten
     source:
       abi: LikeERC721
@@ -66,7 +66,7 @@ templates:
           handler: handleLike
       file: ./src/mapping.ts
   - kind: ethereum
-    name: EndorseERC721
+    name: EndorseERC721TemplateDataSource
     network: ropsten
     source:
       abi: EndorseERC721
