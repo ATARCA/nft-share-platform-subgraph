@@ -19,10 +19,10 @@ type ShareableToken @entity {
   id: ID!
   ownerAddress: Bytes!
   contractAddress: Bytes!
+  metadataUri: String
   isOriginal: Boolean! #token is original minted by the project admin
   isSharedInstance: Boolean! #token was shared by the parent token owner with a 3rd person
   isLikeToken: Boolean!
-
   
   tokenId: BigInt
   parentTokenId: BigInt

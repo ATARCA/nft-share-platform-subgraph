@@ -205,6 +205,23 @@ export class ShareableToken extends Entity {
     this.set("contractAddress", Value.fromBytes(value));
   }
 
+  get metadataUri(): string | null {
+    let value = this.get("metadataUri");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set metadataUri(value: string | null) {
+    if (!value) {
+      this.unset("metadataUri");
+    } else {
+      this.set("metadataUri", Value.fromString(<string>value));
+    }
+  }
+
   get isOriginal(): boolean {
     let value = this.get("isOriginal");
     return value!.toBoolean();

@@ -10,6 +10,7 @@ import { Endorse } from "../generated/templates/EndorseERC721TemplateDataSource/
 import { EndorseERC721ProxyCreated, LikeERC721ProxyCreated, ShareableERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
 import { ExampleEntity, Project, ShareableToken } from "../generated/schema"
 import { ShareableERC721TemplateDataSource, LikeERC721TemplateDataSource, EndorseERC721TemplateDataSource } from '../generated/templates'
+import { ShareableERC721 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
 
 //TODO remove this demo code
 export function handleApproval(event: Approval): void {
@@ -121,7 +122,8 @@ export function handleEndorseERC721ContractCreated(event: EndorseERC721ProxyCrea
 
 export function handleShare(event: Share): void {
 
-  const shareContractAddress = event.address;
+  const shareContractAddress = event.address
+  const shareContract = ShareableERC721.bind(shareContractAddress)
   
   const newTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.tokenId)
   const parentTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.derivedFromTokenId)
@@ -143,6 +145,7 @@ export function handleShare(event: Share): void {
   newToken.isSharedInstance = true
   newToken.isLikeToken = false
   newToken.contractAddress = shareContractAddress
+  newToken.metadataUri = shareContract.tokenURI(event.params.tokenId)
 
   log.info('logging sharedBy event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
  
@@ -151,7 +154,9 @@ export function handleShare(event: Share): void {
 }
 
 export function handleMint(event: Mint): void {
-  const shareContractAddress = event.address;
+  const shareContractAddress = event.address
+  const shareContract = ShareableERC721.bind(shareContractAddress)
+
   const tokenEntityId = getTokenEntityIdFromAddress(shareContractAddress, event.params.tokenId)
 
   const token = new ShareableToken(tokenEntityId)
@@ -161,6 +166,7 @@ export function handleMint(event: Mint): void {
   token.isLikeToken = false
   token.tokenId = event.params.tokenId
   token.contractAddress = shareContractAddress
+  token.metadataUri = shareContract.tokenURI(event.params.tokenId)
 
   token.save()
 }
@@ -191,6 +197,7 @@ export function handleLike(event: Like): void {
 
   likeToken.tokenId = event.params.likeTokenId
   likeToken.likedParentToken = parentToken.id
+  likeToken.metadataUri = likeContract.tokenURI(event.params.likeTokenId)
 
   likeToken.save()
 }
