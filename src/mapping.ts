@@ -69,7 +69,7 @@ export function handleShare(event: Share): void {
 
   const shareContractAddress = event.address
   const shareContract = ShareableERC721.bind(shareContractAddress)
-  const project = Project.load(shareContract.name)
+  const project = Project.load(shareContract.name())
 
 
   const newTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.tokenId)
@@ -95,7 +95,7 @@ export function handleShare(event: Share): void {
   newToken.metadataUri = shareContract.tokenURI(event.params.tokenId)
 
   if (project) newToken.project = project.id
-  else log.critical('Project does not exist {}', [shareContract.name])
+  else log.critical('Project does not exist {}', [shareContract.name()])
 
   log.info('logging sharedBy event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
  
@@ -106,7 +106,7 @@ export function handleShare(event: Share): void {
 export function handleMint(event: Mint): void {
   const shareContractAddress = event.address
   const shareContract = ShareableERC721.bind(shareContractAddress)
-  const project = Project.load(shareContract.name)
+  const project = Project.load(shareContract.name())
 
   const tokenEntityId = getTokenEntityIdFromAddress(shareContractAddress, event.params.tokenId)
 
@@ -120,7 +120,7 @@ export function handleMint(event: Mint): void {
   token.metadataUri = shareContract.tokenURI(event.params.tokenId)
 
   if (project) token.project = project.id
-  else log.critical('Project does not exist {}', [shareContract.name])
+  else log.critical('Project does not exist {}', [shareContract.name()])
   
 
   token.save()
@@ -159,7 +159,7 @@ export function handleLike(event: Like): void {
   likeToken.metadataUri = likeContract.tokenURI(event.params.likeTokenId)
   
   if (project) likeToken.project = project.id
-  else log.critical('Project does not exist {}', [shareContract.name])
+  else log.critical('Project does not exist {}', [shareContract.name()])
 
   likeToken.save()
 }

@@ -2,7 +2,7 @@ import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum'
 import { Address, BigInt } from '@graphprotocol/graph-ts/common/numbers'
 import { clearStore, test, assert, newMockEvent, createMockedFunction } from 'matchstick-as/assembly/index'
 import { Like } from '../generated/templates/LikeERC721TemplateDataSource/LikeERC721'
-import { ShareableToken } from '../generated/schema'
+import { Project, ShareableToken } from '../generated/schema'
 import { Mint, Share } from '../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721'
 import { getTokenEntityId, handleLike, handleMint, handleShare } from '../src/mapping'
 
@@ -18,8 +18,12 @@ import { getTokenEntityId, handleLike, handleMint, handleShare } from '../src/ma
 
   const mockedTokenUri = 'domain.xyz/'
 
+  const projectName = 'token name'
+
   test('can create newly minted token', () => {
     mockShareContractTokenUri('1')
+    mockShareContractName()
+    createMockProject()
   
     const mintEvent = createMintEvent(ownerAddress, address1, 1)
     handleMint(mintEvent)
@@ -36,6 +40,7 @@ import { getTokenEntityId, handleLike, handleMint, handleShare } from '../src/ma
   test('minted token can be shared', () => {
     mockShareContractTokenUri('1')
     mockShareContractTokenUri('2')
+    createMockProject()
     
     const mintEvent = createMintEvent(ownerAddress, address1, 1)
     handleMint(mintEvent)
@@ -60,6 +65,7 @@ import { getTokenEntityId, handleLike, handleMint, handleShare } from '../src/ma
     mockLikeContractProjectAddress(shareTokenContractAddress)
     mockShareContractTokenUri('1')
     mockLikeContractTokenUri('2')
+    createMockProject()
 
     const mintEvent = createMintEvent(ownerAddress, address1, 1)
     handleMint(mintEvent)
@@ -83,7 +89,7 @@ import { getTokenEntityId, handleLike, handleMint, handleShare } from '../src/ma
     mockShareContractTokenUri('1')
     mockShareContractTokenUri('2')
     mockLikeContractTokenUri('3')
-
+    createMockProject()
 
     const mintEvent = createMintEvent(ownerAddress, address1, 1)
     handleMint(mintEvent)
@@ -128,8 +134,18 @@ function mockLikeContractTokenUri(tokenId: string): void {
   .returns([ethereum.Value.fromString(buildUriForToken(likeContractAddress,tokenId))])
 }
 
+function mockShareContractName(): void {
+  createMockedFunction(Address.fromString(shareTokenContractAddress),"name", "name():(string)")
+  .returns([ethereum.Value.fromString(projectName)])
+}
+
 function buildUriForToken(contractAddress: string, tokenId: string): string {
   return mockedTokenUri+shareTokenContractAddress+'-'+tokenId
+}
+
+function createMockProject(): void {
+  let project = new Project(projectName)
+  project.save()
 }
 
 function createShareEvent(
