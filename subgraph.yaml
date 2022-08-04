@@ -6,7 +6,7 @@ dataSources:
     name: TalkoFactory
     network: ropsten
     source:
-      address: "0xe283Bd7c79188b594e9C19E9032ff365A37Cc4fF"
+      address: "0x6Cb9f16F613acf9A2684cd68e2EF2a228AAf259d"
       abi: TalkoFactory
       startBlock: 12474830
     mapping:
