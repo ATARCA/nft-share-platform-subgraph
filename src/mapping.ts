@@ -1,7 +1,5 @@
 import { Address, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 import {
-  Approval,
-  ApprovalForAll,
   Share,
   Mint
 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
@@ -11,59 +9,6 @@ import { EndorseERC721ProxyCreated, LikeERC721ProxyCreated, ShareableERC721Proxy
 import { ExampleEntity, Project, ShareableToken } from "../generated/schema"
 import { ShareableERC721TemplateDataSource, LikeERC721TemplateDataSource, EndorseERC721TemplateDataSource } from '../generated/templates'
 import { ShareableERC721 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
-
-//TODO remove this demo code
-export function handleApproval(event: Approval): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  let entity = ExampleEntity.load(event.transaction.from.toHex())
-
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new ExampleEntity(event.transaction.from.toHex())
-
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
-  }
-
-  // BigInt and BigDecimal math are supported
-  entity.count = entity.count.plus( BigInt.fromI32(1))
-
-  // Entity fields can be set based on event parameters
-  entity.owner = event.params.owner
-  entity.approved = event.params.approved
-
-  // Entities can be written to the store with `.save()`
-  entity.save()
-
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.balanceOf(...)
-  // - contract.getApproved(...)
-  // - contract.isApprovedForAll(...)
-  // - contract.name(...)
-  // - contract.owner(...)
-  // - contract.ownerOf(...)
-  // - contract.supportsInterface(...)
-  // - contract.symbol(...)
-  // - contract.tokenURI(...)
-}
-
-export function handleApprovalForAll(event: ApprovalForAll): void {}
 
 export function getTokenEntityId(contractAddress: String, tokenId: BigInt): string {
   return `${contractAddress.toLowerCase()}-${tokenId}`
@@ -124,7 +69,9 @@ export function handleShare(event: Share): void {
 
   const shareContractAddress = event.address
   const shareContract = ShareableERC721.bind(shareContractAddress)
-  
+  const project = Project.load(shareContract.name)
+
+
   const newTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.tokenId)
   const parentTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.derivedFromTokenId)
   
@@ -147,6 +94,9 @@ export function handleShare(event: Share): void {
   newToken.contractAddress = shareContractAddress
   newToken.metadataUri = shareContract.tokenURI(event.params.tokenId)
 
+  if (project) newToken.project = project.id
+  else log.critical('Project does not exist {}', [shareContract.name])
+
   log.info('logging sharedBy event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
  
   newToken.save()
@@ -156,6 +106,7 @@ export function handleShare(event: Share): void {
 export function handleMint(event: Mint): void {
   const shareContractAddress = event.address
   const shareContract = ShareableERC721.bind(shareContractAddress)
+  const project = Project.load(shareContract.name)
 
   const tokenEntityId = getTokenEntityIdFromAddress(shareContractAddress, event.params.tokenId)
 
@@ -168,6 +119,10 @@ export function handleMint(event: Mint): void {
   token.contractAddress = shareContractAddress
   token.metadataUri = shareContract.tokenURI(event.params.tokenId)
 
+  if (project) token.project = project.id
+  else log.critical('Project does not exist {}', [shareContract.name])
+  
+
   token.save()
 }
 
@@ -176,6 +131,10 @@ export function handleLike(event: Like): void {
   const likeContractAddress = event.address;
   const likeContract = LikeERC721.bind(likeContractAddress)
   const shareContractAddress = likeContract.getProjectAddress()
+  const shareContract = ShareableERC721.bind(shareContractAddress)
+
+  const project = Project.load(shareContract.name())
+
 
   const parentTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.contributionTokenId)
   let parentToken = ShareableToken.load(parentTokenEntityId)
@@ -198,6 +157,9 @@ export function handleLike(event: Like): void {
   likeToken.tokenId = event.params.likeTokenId
   likeToken.likedParentToken = parentToken.id
   likeToken.metadataUri = likeContract.tokenURI(event.params.likeTokenId)
+  
+  if (project) likeToken.project = project.id
+  else log.critical('Project does not exist {}', [shareContract.name])
 
   likeToken.save()
 }

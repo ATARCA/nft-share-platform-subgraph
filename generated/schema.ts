@@ -156,6 +156,7 @@ export class ShareableToken extends Entity {
 
     this.set("ownerAddress", Value.fromBytes(Bytes.empty()));
     this.set("contractAddress", Value.fromBytes(Bytes.empty()));
+    this.set("project", Value.fromString(""));
     this.set("isOriginal", Value.fromBoolean(false));
     this.set("isSharedInstance", Value.fromBoolean(false));
     this.set("isLikeToken", Value.fromBoolean(false));
@@ -220,6 +221,15 @@ export class ShareableToken extends Entity {
     } else {
       this.set("metadataUri", Value.fromString(<string>value));
     }
+  }
+
+  get project(): string {
+    let value = this.get("project");
+    return value!.toString();
+  }
+
+  set project(value: string) {
+    this.set("project", Value.fromString(value));
   }
 
   get isOriginal(): boolean {
