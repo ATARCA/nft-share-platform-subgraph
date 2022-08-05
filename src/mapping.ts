@@ -15,7 +15,7 @@ export function getTokenEntityId(contractAddress: String, tokenId: BigInt): stri
 }
 
 export function getTokenEntityIdFromAddress(contractAddress: Address, tokenId: BigInt): string {
-  return getTokenEntityId(contractAddress.toHex(), tokenId)
+  return getTokenEntityId(contractAddress.toHexString(), tokenId)
 }
 
 export function handleShareableERC721ContractCreated(event: ShareableERC721ProxyCreated): void {
@@ -27,10 +27,13 @@ export function handleShareableERC721ContractCreated(event: ShareableERC721Proxy
   }
 
   project.shareableContractAddress = event.params._sproxy
-  project.owner = event.params._creator
+  project.owner = event.params._owner
   project.save()
 
   ShareableERC721TemplateDataSource.create(event.params._sproxy)
+
+  log.info('Share contract created name {}  {}', [projectName,event.address.toHexString()])
+
 }
 
 export function handleLikeERC721ContractCreated(event: LikeERC721ProxyCreated): void {
@@ -42,10 +45,13 @@ export function handleLikeERC721ContractCreated(event: LikeERC721ProxyCreated): 
     project = new Project(projectName)
   }
 
-  project.likeContractAddress = event.params._sproxy
+  project.likeContractAddress = event.params._lproxy
   project.save()
 
-  LikeERC721TemplateDataSource.create(event.params._sproxy)
+  LikeERC721TemplateDataSource.create(event.params._lproxy)
+
+  log.info('Like contract created name {}  {}', [projectName,event.address.toHexString()])
+
 }
 
 export function handleEndorseERC721ContractCreated(event: EndorseERC721ProxyCreated): void {
@@ -57,10 +63,12 @@ export function handleEndorseERC721ContractCreated(event: EndorseERC721ProxyCrea
     project = new Project(projectName)
   }
 
-  project.endorseContractAddress = event.params._sproxy
+  project.endorseContractAddress = event.params._eproxy
   project.save()
 
-  EndorseERC721TemplateDataSource.create(event.params._sproxy)
+  EndorseERC721TemplateDataSource.create(event.params._eproxy)
+
+  log.info('Endorse contract created name {}  {}', [projectName,event.address.toHexString()])
 }
 
 //TODO implement burning - transfer to zero address is burning
@@ -79,7 +87,7 @@ export function handleShare(event: Share): void {
 
   if (!parentToken) {
     parentToken = new ShareableToken(parentTokenEntityId)
-    log.critical('Shared token does not exist. Event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
+    log.critical('Shared token does not exist. Event address {} params.to {}', [event.address.toHexString(),event.params.to.toHexString()])
   }
 
   const newToken = new ShareableToken(newTokenEntityId)
@@ -97,7 +105,7 @@ export function handleShare(event: Share): void {
   if (project) newToken.project = project.id
   else log.critical('Project does not exist {}', [shareContract.name()])
 
-  log.info('logging sharedBy event address {} params.to {}', [event.address.toHex(),event.params.to.toHex()])
+  log.info('logging sharedBy event address {} params.to {}', [event.address.toHexString(),event.params.to.toHexString()])
  
   newToken.save()
   parentToken.save()
