@@ -24,7 +24,7 @@ type ShareableToken @entity {
   isLikeToken: Boolean! #token represent like of an original or shared token
   
   tokenId: BigInt
-  parentTokenId: BigInt
+  parentTokenId: BigInt #parent of a shared token
 
   parentToken: ShareableToken # parent token a permissioned shared token was derived from
   sharedChildTokens: [ShareableToken!]! @derivedFrom(field: "parentToken") # tokens from permissioned sharing

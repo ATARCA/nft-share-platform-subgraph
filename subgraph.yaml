@@ -6,9 +6,9 @@ dataSources:
     name: TalkoFactory
     network: ropsten
     source:
-      address: "0x6Cb9f16F613acf9A2684cd68e2EF2a228AAf259d"
+      address: "0xb4CEA12BaF1529DFdE908016B81A2D668b321CDd"
       abi: TalkoFactory
-      startBlock: 12474830
+      startBlock: 12714830
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -19,11 +19,11 @@ dataSources:
         - name: TalkoFactory
           file: ./abis/TalkoFactory.sol/TalkoFactory.json
       eventHandlers:
-        - event: ShareableERC721ProxyCreated(indexed address,indexed address,indexed string,string)
+        - event: ShareableERC721ProxyCreated(indexed address,indexed address,string,string)
           handler: handleShareableERC721ContractCreated
-        - event: LikeERC721ProxyCreated(indexed address,indexed address,indexed string,string)
+        - event: LikeERC721ProxyCreated(indexed address,indexed address,string,string)
           handler: handleLikeERC721ContractCreated
-        - event: EndorseERC721ProxyCreated(indexed address,indexed address,indexed string,string)
+        - event: EndorseERC721ProxyCreated(indexed address,indexed address,string,string)
           handler: handleEndorseERC721ContractCreated
       file: ./src/mapping.ts
 templates:
@@ -61,6 +61,8 @@ templates:
       abis:
         - name: LikeERC721
           file: ./abis/LikeERC721.sol/LikeERC721.json
+        - name: ShareableERC721
+          file: ./abis/ShareableERC721.sol/ShareableERC721.json
       eventHandlers:
         - event: Like(indexed address,indexed address,indexed uint256,uint256)
           handler: handleLike
