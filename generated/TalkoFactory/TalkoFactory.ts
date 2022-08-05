@@ -23,16 +23,16 @@ export class EndorseERC721ProxyCreated__Params {
     this._event = event;
   }
 
-  get _sproxy(): Address {
+  get _eproxy(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get _creator(): Address {
+  get _owner(): Address {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get _name(): Bytes {
-    return this._event.parameters[2].value.toBytes();
+  get _name(): string {
+    return this._event.parameters[2].value.toString();
   }
 
   get _symbol(): string {
@@ -53,16 +53,16 @@ export class LikeERC721ProxyCreated__Params {
     this._event = event;
   }
 
-  get _sproxy(): Address {
+  get _lproxy(): Address {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get _creator(): Address {
+  get _owner(): Address {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get _name(): Bytes {
-    return this._event.parameters[2].value.toBytes();
+  get _name(): string {
+    return this._event.parameters[2].value.toString();
   }
 
   get _symbol(): string {
@@ -87,12 +87,12 @@ export class ShareableERC721ProxyCreated__Params {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get _creator(): Address {
+  get _owner(): Address {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get _name(): Bytes {
-    return this._event.parameters[2].value.toBytes();
+  get _name(): string {
+    return this._event.parameters[2].value.toString();
   }
 
   get _symbol(): string {
@@ -174,19 +174,17 @@ export class TalkoFactory extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  createEProxy(
+  createEndorseERC721Proxy(
     _name: string,
     _symbol: string,
-    _index: BigInt,
     _owner: Address
   ): Address {
     let result = super.call(
-      "createEProxy",
-      "createEProxy(string,string,uint256,address):(address)",
+      "createEndorseERC721Proxy",
+      "createEndorseERC721Proxy(string,string,address):(address)",
       [
         ethereum.Value.fromString(_name),
         ethereum.Value.fromString(_symbol),
-        ethereum.Value.fromUnsignedBigInt(_index),
         ethereum.Value.fromAddress(_owner)
       ]
     );
@@ -194,19 +192,17 @@ export class TalkoFactory extends ethereum.SmartContract {
     return result[0].toAddress();
   }
 
-  try_createEProxy(
+  try_createEndorseERC721Proxy(
     _name: string,
     _symbol: string,
-    _index: BigInt,
     _owner: Address
   ): ethereum.CallResult<Address> {
     let result = super.tryCall(
-      "createEProxy",
-      "createEProxy(string,string,uint256,address):(address)",
+      "createEndorseERC721Proxy",
+      "createEndorseERC721Proxy(string,string,address):(address)",
       [
         ethereum.Value.fromString(_name),
         ethereum.Value.fromString(_symbol),
-        ethereum.Value.fromUnsignedBigInt(_index),
         ethereum.Value.fromAddress(_owner)
       ]
     );
@@ -217,19 +213,17 @@ export class TalkoFactory extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  createLProxy(
+  createLikeERC721Proxy(
     _name: string,
     _symbol: string,
-    _index: BigInt,
     _owner: Address
   ): Address {
     let result = super.call(
-      "createLProxy",
-      "createLProxy(string,string,uint256,address):(address)",
+      "createLikeERC721Proxy",
+      "createLikeERC721Proxy(string,string,address):(address)",
       [
         ethereum.Value.fromString(_name),
         ethereum.Value.fromString(_symbol),
-        ethereum.Value.fromUnsignedBigInt(_index),
         ethereum.Value.fromAddress(_owner)
       ]
     );
@@ -237,19 +231,17 @@ export class TalkoFactory extends ethereum.SmartContract {
     return result[0].toAddress();
   }
 
-  try_createLProxy(
+  try_createLikeERC721Proxy(
     _name: string,
     _symbol: string,
-    _index: BigInt,
     _owner: Address
   ): ethereum.CallResult<Address> {
     let result = super.tryCall(
-      "createLProxy",
-      "createLProxy(string,string,uint256,address):(address)",
+      "createLikeERC721Proxy",
+      "createLikeERC721Proxy(string,string,address):(address)",
       [
         ethereum.Value.fromString(_name),
         ethereum.Value.fromString(_symbol),
-        ethereum.Value.fromUnsignedBigInt(_index),
         ethereum.Value.fromAddress(_owner)
       ]
     );
@@ -260,19 +252,17 @@ export class TalkoFactory extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  createSProxy(
+  createShareableERC721Proxy(
     _name: string,
     _symbol: string,
-    _index: BigInt,
     _owner: Address
   ): Address {
     let result = super.call(
-      "createSProxy",
-      "createSProxy(string,string,uint256,address):(address)",
+      "createShareableERC721Proxy",
+      "createShareableERC721Proxy(string,string,address):(address)",
       [
         ethereum.Value.fromString(_name),
         ethereum.Value.fromString(_symbol),
-        ethereum.Value.fromUnsignedBigInt(_index),
         ethereum.Value.fromAddress(_owner)
       ]
     );
@@ -280,19 +270,17 @@ export class TalkoFactory extends ethereum.SmartContract {
     return result[0].toAddress();
   }
 
-  try_createSProxy(
+  try_createShareableERC721Proxy(
     _name: string,
     _symbol: string,
-    _index: BigInt,
     _owner: Address
   ): ethereum.CallResult<Address> {
     let result = super.tryCall(
-      "createSProxy",
-      "createSProxy(string,string,uint256,address):(address)",
+      "createShareableERC721Proxy",
+      "createShareableERC721Proxy(string,string,address):(address)",
       [
         ethereum.Value.fromString(_name),
         ethereum.Value.fromString(_symbol),
-        ethereum.Value.fromUnsignedBigInt(_index),
         ethereum.Value.fromAddress(_owner)
       ]
     );
@@ -303,24 +291,21 @@ export class TalkoFactory extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  endorsableProxyNameAndSymbolExists(_name: string, _symbol: string): boolean {
+  endorsableProxyNameExists(_name: string): boolean {
     let result = super.call(
-      "endorsableProxyNameAndSymbolExists",
-      "endorsableProxyNameAndSymbolExists(string,string):(bool)",
-      [ethereum.Value.fromString(_name), ethereum.Value.fromString(_symbol)]
+      "endorsableProxyNameExists",
+      "endorsableProxyNameExists(string):(bool)",
+      [ethereum.Value.fromString(_name)]
     );
 
     return result[0].toBoolean();
   }
 
-  try_endorsableProxyNameAndSymbolExists(
-    _name: string,
-    _symbol: string
-  ): ethereum.CallResult<boolean> {
+  try_endorsableProxyNameExists(_name: string): ethereum.CallResult<boolean> {
     let result = super.tryCall(
-      "endorsableProxyNameAndSymbolExists",
-      "endorsableProxyNameAndSymbolExists(string,string):(bool)",
-      [ethereum.Value.fromString(_name), ethereum.Value.fromString(_symbol)]
+      "endorsableProxyNameExists",
+      "endorsableProxyNameExists(string):(bool)",
+      [ethereum.Value.fromString(_name)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -329,24 +314,90 @@ export class TalkoFactory extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  likeableProxyNameAndSymbolExists(_name: string, _symbol: string): boolean {
+  getIndexForEndorseERC721ProxyInstance(): BigInt {
     let result = super.call(
-      "likeableProxyNameAndSymbolExists",
-      "likeableProxyNameAndSymbolExists(string,string):(bool)",
-      [ethereum.Value.fromString(_name), ethereum.Value.fromString(_symbol)]
+      "getIndexForEndorseERC721ProxyInstance",
+      "getIndexForEndorseERC721ProxyInstance():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getIndexForEndorseERC721ProxyInstance(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getIndexForEndorseERC721ProxyInstance",
+      "getIndexForEndorseERC721ProxyInstance():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getIndexForLikeERC721ProxyInstance(): BigInt {
+    let result = super.call(
+      "getIndexForLikeERC721ProxyInstance",
+      "getIndexForLikeERC721ProxyInstance():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getIndexForLikeERC721ProxyInstance(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getIndexForLikeERC721ProxyInstance",
+      "getIndexForLikeERC721ProxyInstance():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  getIndexForShareableERC721ProxyInstance(): BigInt {
+    let result = super.call(
+      "getIndexForShareableERC721ProxyInstance",
+      "getIndexForShareableERC721ProxyInstance():(uint256)",
+      []
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_getIndexForShareableERC721ProxyInstance(): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "getIndexForShareableERC721ProxyInstance",
+      "getIndexForShareableERC721ProxyInstance():(uint256)",
+      []
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  likeableProxyNameExists(_name: string): boolean {
+    let result = super.call(
+      "likeableProxyNameExists",
+      "likeableProxyNameExists(string):(bool)",
+      [ethereum.Value.fromString(_name)]
     );
 
     return result[0].toBoolean();
   }
 
-  try_likeableProxyNameAndSymbolExists(
-    _name: string,
-    _symbol: string
-  ): ethereum.CallResult<boolean> {
+  try_likeableProxyNameExists(_name: string): ethereum.CallResult<boolean> {
     let result = super.tryCall(
-      "likeableProxyNameAndSymbolExists",
-      "likeableProxyNameAndSymbolExists(string,string):(bool)",
-      [ethereum.Value.fromString(_name), ethereum.Value.fromString(_symbol)]
+      "likeableProxyNameExists",
+      "likeableProxyNameExists(string):(bool)",
+      [ethereum.Value.fromString(_name)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -355,24 +406,21 @@ export class TalkoFactory extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
-  shareableProxyNameAndSymbolExists(_name: string, _symbol: string): boolean {
+  shareableProxyNameExists(_name: string): boolean {
     let result = super.call(
-      "shareableProxyNameAndSymbolExists",
-      "shareableProxyNameAndSymbolExists(string,string):(bool)",
-      [ethereum.Value.fromString(_name), ethereum.Value.fromString(_symbol)]
+      "shareableProxyNameExists",
+      "shareableProxyNameExists(string):(bool)",
+      [ethereum.Value.fromString(_name)]
     );
 
     return result[0].toBoolean();
   }
 
-  try_shareableProxyNameAndSymbolExists(
-    _name: string,
-    _symbol: string
-  ): ethereum.CallResult<boolean> {
+  try_shareableProxyNameExists(_name: string): ethereum.CallResult<boolean> {
     let result = super.tryCall(
-      "shareableProxyNameAndSymbolExists",
-      "shareableProxyNameAndSymbolExists(string,string):(bool)",
-      [ethereum.Value.fromString(_name), ethereum.Value.fromString(_symbol)]
+      "shareableProxyNameExists",
+      "shareableProxyNameExists(string):(bool)",
+      [ethereum.Value.fromString(_name)]
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -420,20 +468,20 @@ export class ConstructorCall__Outputs {
   }
 }
 
-export class CreateEProxyCall extends ethereum.Call {
-  get inputs(): CreateEProxyCall__Inputs {
-    return new CreateEProxyCall__Inputs(this);
+export class CreateEndorseERC721ProxyCall extends ethereum.Call {
+  get inputs(): CreateEndorseERC721ProxyCall__Inputs {
+    return new CreateEndorseERC721ProxyCall__Inputs(this);
   }
 
-  get outputs(): CreateEProxyCall__Outputs {
-    return new CreateEProxyCall__Outputs(this);
+  get outputs(): CreateEndorseERC721ProxyCall__Outputs {
+    return new CreateEndorseERC721ProxyCall__Outputs(this);
   }
 }
 
-export class CreateEProxyCall__Inputs {
-  _call: CreateEProxyCall;
+export class CreateEndorseERC721ProxyCall__Inputs {
+  _call: CreateEndorseERC721ProxyCall;
 
-  constructor(call: CreateEProxyCall) {
+  constructor(call: CreateEndorseERC721ProxyCall) {
     this._call = call;
   }
 
@@ -445,19 +493,15 @@ export class CreateEProxyCall__Inputs {
     return this._call.inputValues[1].value.toString();
   }
 
-  get _index(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-
   get _owner(): Address {
-    return this._call.inputValues[3].value.toAddress();
+    return this._call.inputValues[2].value.toAddress();
   }
 }
 
-export class CreateEProxyCall__Outputs {
-  _call: CreateEProxyCall;
+export class CreateEndorseERC721ProxyCall__Outputs {
+  _call: CreateEndorseERC721ProxyCall;
 
-  constructor(call: CreateEProxyCall) {
+  constructor(call: CreateEndorseERC721ProxyCall) {
     this._call = call;
   }
 
@@ -466,20 +510,20 @@ export class CreateEProxyCall__Outputs {
   }
 }
 
-export class CreateLProxyCall extends ethereum.Call {
-  get inputs(): CreateLProxyCall__Inputs {
-    return new CreateLProxyCall__Inputs(this);
+export class CreateLikeERC721ProxyCall extends ethereum.Call {
+  get inputs(): CreateLikeERC721ProxyCall__Inputs {
+    return new CreateLikeERC721ProxyCall__Inputs(this);
   }
 
-  get outputs(): CreateLProxyCall__Outputs {
-    return new CreateLProxyCall__Outputs(this);
+  get outputs(): CreateLikeERC721ProxyCall__Outputs {
+    return new CreateLikeERC721ProxyCall__Outputs(this);
   }
 }
 
-export class CreateLProxyCall__Inputs {
-  _call: CreateLProxyCall;
+export class CreateLikeERC721ProxyCall__Inputs {
+  _call: CreateLikeERC721ProxyCall;
 
-  constructor(call: CreateLProxyCall) {
+  constructor(call: CreateLikeERC721ProxyCall) {
     this._call = call;
   }
 
@@ -491,19 +535,15 @@ export class CreateLProxyCall__Inputs {
     return this._call.inputValues[1].value.toString();
   }
 
-  get _index(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-
   get _owner(): Address {
-    return this._call.inputValues[3].value.toAddress();
+    return this._call.inputValues[2].value.toAddress();
   }
 }
 
-export class CreateLProxyCall__Outputs {
-  _call: CreateLProxyCall;
+export class CreateLikeERC721ProxyCall__Outputs {
+  _call: CreateLikeERC721ProxyCall;
 
-  constructor(call: CreateLProxyCall) {
+  constructor(call: CreateLikeERC721ProxyCall) {
     this._call = call;
   }
 
@@ -512,20 +552,20 @@ export class CreateLProxyCall__Outputs {
   }
 }
 
-export class CreateSProxyCall extends ethereum.Call {
-  get inputs(): CreateSProxyCall__Inputs {
-    return new CreateSProxyCall__Inputs(this);
+export class CreateShareableERC721ProxyCall extends ethereum.Call {
+  get inputs(): CreateShareableERC721ProxyCall__Inputs {
+    return new CreateShareableERC721ProxyCall__Inputs(this);
   }
 
-  get outputs(): CreateSProxyCall__Outputs {
-    return new CreateSProxyCall__Outputs(this);
+  get outputs(): CreateShareableERC721ProxyCall__Outputs {
+    return new CreateShareableERC721ProxyCall__Outputs(this);
   }
 }
 
-export class CreateSProxyCall__Inputs {
-  _call: CreateSProxyCall;
+export class CreateShareableERC721ProxyCall__Inputs {
+  _call: CreateShareableERC721ProxyCall;
 
-  constructor(call: CreateSProxyCall) {
+  constructor(call: CreateShareableERC721ProxyCall) {
     this._call = call;
   }
 
@@ -537,19 +577,15 @@ export class CreateSProxyCall__Inputs {
     return this._call.inputValues[1].value.toString();
   }
 
-  get _index(): BigInt {
-    return this._call.inputValues[2].value.toBigInt();
-  }
-
   get _owner(): Address {
-    return this._call.inputValues[3].value.toAddress();
+    return this._call.inputValues[2].value.toAddress();
   }
 }
 
-export class CreateSProxyCall__Outputs {
-  _call: CreateSProxyCall;
+export class CreateShareableERC721ProxyCall__Outputs {
+  _call: CreateShareableERC721ProxyCall;
 
-  constructor(call: CreateSProxyCall) {
+  constructor(call: CreateShareableERC721ProxyCall) {
     this._call = call;
   }
 
