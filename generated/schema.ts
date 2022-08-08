@@ -75,13 +75,88 @@ export class ExampleEntity extends Entity {
   }
 }
 
-export class ShareableToken extends Entity {
+export class Project extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+
+    this.set("owner", Value.fromBytes(Bytes.empty()));
+    this.set("shareableContractAddress", Value.fromBytes(Bytes.empty()));
+    this.set("likeContractAddress", Value.fromBytes(Bytes.empty()));
+    this.set("endorseContractAddress", Value.fromBytes(Bytes.empty()));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Project entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        "Cannot save Project entity with non-string ID. " +
+          'Considering using .toHex() to convert the "id" to a string.'
+      );
+      store.set("Project", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Project | null {
+    return changetype<Project | null>(store.get("Project", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get owner(): Bytes {
+    let value = this.get("owner");
+    return value!.toBytes();
+  }
+
+  set owner(value: Bytes) {
+    this.set("owner", Value.fromBytes(value));
+  }
+
+  get shareableContractAddress(): Bytes {
+    let value = this.get("shareableContractAddress");
+    return value!.toBytes();
+  }
+
+  set shareableContractAddress(value: Bytes) {
+    this.set("shareableContractAddress", Value.fromBytes(value));
+  }
+
+  get likeContractAddress(): Bytes {
+    let value = this.get("likeContractAddress");
+    return value!.toBytes();
+  }
+
+  set likeContractAddress(value: Bytes) {
+    this.set("likeContractAddress", Value.fromBytes(value));
+  }
+
+  get endorseContractAddress(): Bytes {
+    let value = this.get("endorseContractAddress");
+    return value!.toBytes();
+  }
+
+  set endorseContractAddress(value: Bytes) {
+    this.set("endorseContractAddress", Value.fromBytes(value));
+  }
+}
+
+export class Token extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
 
     this.set("ownerAddress", Value.fromBytes(Bytes.empty()));
     this.set("contractAddress", Value.fromBytes(Bytes.empty()));
+    this.set("project", Value.fromString(""));
     this.set("isOriginal", Value.fromBoolean(false));
     this.set("isSharedInstance", Value.fromBoolean(false));
     this.set("isLikeToken", Value.fromBoolean(false));
@@ -89,19 +164,19 @@ export class ShareableToken extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save ShareableToken entity without an ID");
+    assert(id != null, "Cannot save Token entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        "Cannot save ShareableToken entity with non-string ID. " +
+        "Cannot save Token entity with non-string ID. " +
           'Considering using .toHex() to convert the "id" to a string.'
       );
-      store.set("ShareableToken", id.toString(), this);
+      store.set("Token", id.toString(), this);
     }
   }
 
-  static load(id: string): ShareableToken | null {
-    return changetype<ShareableToken | null>(store.get("ShareableToken", id));
+  static load(id: string): Token | null {
+    return changetype<Token | null>(store.get("Token", id));
   }
 
   get id(): string {
@@ -129,6 +204,32 @@ export class ShareableToken extends Entity {
 
   set contractAddress(value: Bytes) {
     this.set("contractAddress", Value.fromBytes(value));
+  }
+
+  get metadataUri(): string | null {
+    let value = this.get("metadataUri");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set metadataUri(value: string | null) {
+    if (!value) {
+      this.unset("metadataUri");
+    } else {
+      this.set("metadataUri", Value.fromString(<string>value));
+    }
+  }
+
+  get project(): string {
+    let value = this.get("project");
+    return value!.toString();
+  }
+
+  set project(value: string) {
+    this.set("project", Value.fromString(value));
   }
 
   get isOriginal(): boolean {

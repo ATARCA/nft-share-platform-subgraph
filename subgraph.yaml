@@ -3,12 +3,35 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: ShareableERC721
+    name: TalkoFactory
     network: ropsten
     source:
-      address: "0xe283Bd7c79188b594e9C19E9032ff365A37Cc4fF"
+      address: "0xb4CEA12BaF1529DFdE908016B81A2D668b321CDd"
+      abi: TalkoFactory
+      startBlock: 12714830
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Project
+      abis:
+        - name: TalkoFactory
+          file: ./abis/TalkoFactory.sol/TalkoFactory.json
+      eventHandlers:
+        - event: ShareableERC721ProxyCreated(indexed address,indexed address,string,string)
+          handler: handleShareableERC721ContractCreated
+        - event: LikeERC721ProxyCreated(indexed address,indexed address,string,string)
+          handler: handleLikeERC721ContractCreated
+        - event: EndorseERC721ProxyCreated(indexed address,indexed address,string,string)
+          handler: handleEndorseERC721ContractCreated
+      file: ./src/mapping.ts
+templates:
+  - kind: ethereum
+    name: ShareableERC721TemplateDataSource
+    network: ropsten
+    source:
       abi: ShareableERC721
-      startBlock: 12474830
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -21,16 +44,14 @@ dataSources:
       eventHandlers:
         - event: Share(indexed address,indexed address,indexed uint256,uint256)
           handler: handleShare
-        - event: Mint(indexed address,indexed uint256)
+        - event: Mint(indexed address,indexed address,indexed uint256)
           handler: handleMint
       file: ./src/mapping.ts
   - kind: ethereum
-    name: LikeERC721
+    name: LikeERC721TemplateDataSource
     network: ropsten
     source:
-      address: "0xFb6394BC5EeE2F9f00ab9df3c8c489A4647f0Daf"
       abi: LikeERC721
-      startBlock: 12474830
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.5
@@ -40,7 +61,27 @@ dataSources:
       abis:
         - name: LikeERC721
           file: ./abis/LikeERC721.sol/LikeERC721.json
+        - name: ShareableERC721
+          file: ./abis/ShareableERC721.sol/ShareableERC721.json
       eventHandlers:
         - event: Like(indexed address,indexed address,indexed uint256,uint256)
           handler: handleLike
+      file: ./src/mapping.ts
+  - kind: ethereum
+    name: EndorseERC721TemplateDataSource
+    network: ropsten
+    source:
+      abi: EndorseERC721
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - ShareableToken
+      abis:
+        - name: EndorseERC721
+          file: ./abis/EndorseERC721.sol/EndorseERC721.json
+      eventHandlers:
+        - event: Endorse(indexed address,indexed address,indexed uint256,uint256)
+          handler: handleEndorse
       file: ./src/mapping.ts
