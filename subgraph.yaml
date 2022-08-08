@@ -37,7 +37,7 @@ templates:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - ShareableToken
+        - Token
       abis:
         - name: ShareableERC721
           file: ./abis/ShareableERC721.sol/ShareableERC721.json
@@ -46,6 +46,8 @@ templates:
           handler: handleShare
         - event: Mint(indexed address,indexed address,indexed uint256)
           handler: handleMint
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleShareContractRoleGranted
       file: ./src/mapping.ts
   - kind: ethereum
     name: LikeERC721TemplateDataSource
@@ -57,7 +59,7 @@ templates:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - ShareableToken
+        - Token
       abis:
         - name: LikeERC721
           file: ./abis/LikeERC721.sol/LikeERC721.json
@@ -77,7 +79,7 @@ templates:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - ShareableToken
+        - Token
       abis:
         - name: EndorseERC721
           file: ./abis/EndorseERC721.sol/EndorseERC721.json

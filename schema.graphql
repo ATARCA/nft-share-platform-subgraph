@@ -1,10 +1,3 @@
-type ExampleEntity @entity {
-  id: ID!
-  count: BigInt!
-  owner: Bytes! # address
-  approved: Bytes! # address
-}
-
 type Project @entity {
   id: ID! #project name
   owner: Bytes! # address
@@ -13,7 +6,7 @@ type Project @entity {
   endorseContractAddress: Bytes!
 }
 
-type ShareableToken @entity {
+type Token @entity {
   id: ID!
   ownerAddress: Bytes!
   contractAddress: Bytes!
@@ -26,11 +19,11 @@ type ShareableToken @entity {
   tokenId: BigInt
   parentTokenId: BigInt #parent of a shared token
 
-  parentToken: ShareableToken # parent token a permissioned shared token was derived from
-  sharedChildTokens: [ShareableToken!]! @derivedFrom(field: "parentToken") # tokens from permissioned sharing
+  parentToken: Token # parent token a permissioned shared token was derived from
+  sharedChildTokens: [Token!]! @derivedFrom(field: "parentToken") # tokens from permissioned sharing
   
-  likedParentToken: ShareableToken
-  likeTokens: [ShareableToken!]! @derivedFrom(field: "likedParentToken") # tokens from that have liked this token
+  likedParentToken: Token
+  likeTokens: [Token!]! @derivedFrom(field: "likedParentToken") # tokens from that have liked this token
 }
 
 

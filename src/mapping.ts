@@ -1,7 +1,8 @@
 import { Address, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 import {
   Share,
-  Mint
+  Mint,
+  RoleGranted
 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
 import { Like, LikeERC721 } from "../generated/templates/LikeERC721TemplateDataSource/LikeERC721"
 import { Endorse } from "../generated/templates/EndorseERC721TemplateDataSource/EndorseERC721"
@@ -69,6 +70,23 @@ export function handleEndorseERC721ContractCreated(event: EndorseERC721ProxyCrea
   EndorseERC721TemplateDataSource.create(event.params._eproxy)
 
   log.info('Endorse contract created name {}  {}', [projectName,event.address.toHexString()])
+}
+
+export function handleShareContractRoleGranted(event: RoleGranted): void {
+  const shareContractAddress = event.address
+  const shareContract = ShareableERC721.bind(shareContractAddress)
+  const project = Project.load(shareContract.name())
+
+  if (!project) {
+    log.critical('Project not found name: {} share contract address: {}', [shareContract.name(),shareContractAddress.toHexString()])
+    return
+  }
+
+  if (event.params.role === shareContract.OPERATOR_ROLE()) {
+    const newOperatorAddress = event.params.account
+    project.owner = newOperatorAddress
+    project.save()
+  }
 }
 
 //TODO implement burning - transfer to zero address is burning
