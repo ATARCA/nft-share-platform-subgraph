@@ -6,7 +6,7 @@ import {
 import { Like, LikeERC721 } from "../generated/templates/LikeERC721TemplateDataSource/LikeERC721"
 import { Endorse } from "../generated/templates/EndorseERC721TemplateDataSource/EndorseERC721"
 import { EndorseERC721ProxyCreated, LikeERC721ProxyCreated, ShareableERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
-import { ExampleEntity, Project, ShareableToken } from "../generated/schema"
+import { ExampleEntity, Project, Token } from "../generated/schema"
 import { ShareableERC721TemplateDataSource, LikeERC721TemplateDataSource, EndorseERC721TemplateDataSource } from '../generated/templates'
 import { ShareableERC721 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
 
@@ -83,14 +83,14 @@ export function handleShare(event: Share): void {
   const newTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.tokenId)
   const parentTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.derivedFromTokenId)
   
-  let parentToken = ShareableToken.load(parentTokenEntityId)
+  let parentToken = Token.load(parentTokenEntityId)
 
   if (!parentToken) {
-    parentToken = new ShareableToken(parentTokenEntityId)
+    parentToken = new Token(parentTokenEntityId)
     log.critical('Shared token does not exist. Event address {} params.to {}', [event.address.toHexString(),event.params.to.toHexString()])
   }
 
-  const newToken = new ShareableToken(newTokenEntityId)
+  const newToken = new Token(newTokenEntityId)
 
   newToken.ownerAddress = event.params.to
   newToken.parentTokenId = event.params.derivedFromTokenId
@@ -118,7 +118,7 @@ export function handleMint(event: Mint): void {
 
   const tokenEntityId = getTokenEntityIdFromAddress(shareContractAddress, event.params.tokenId)
 
-  const token = new ShareableToken(tokenEntityId)
+  const token = new Token(tokenEntityId)
   token.ownerAddress = event.params.to
   token.isOriginal = true 
   token.isSharedInstance = false
@@ -145,16 +145,16 @@ export function handleLike(event: Like): void {
 
 
   const parentTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.contributionTokenId)
-  let parentToken = ShareableToken.load(parentTokenEntityId)
+  let parentToken = Token.load(parentTokenEntityId)
 
   if (!parentToken) {
-    parentToken = new ShareableToken(parentTokenEntityId)
+    parentToken = new Token(parentTokenEntityId)
     log.critical('Token to be liked does not exist. TokenId {}', [parentTokenEntityId])
   }
 
   const tokenEntityId = getTokenEntityIdFromAddress(likeContractAddress, event.params.likeTokenId)
 
-  const likeToken = new ShareableToken(tokenEntityId)
+  const likeToken = new Token(tokenEntityId)
 
   likeToken.ownerAddress = event.params.liker
   likeToken.contractAddress = likeContractAddress

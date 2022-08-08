@@ -149,7 +149,7 @@ export class Project extends Entity {
   }
 }
 
-export class ShareableToken extends Entity {
+export class Token extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -164,19 +164,19 @@ export class ShareableToken extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save ShareableToken entity without an ID");
+    assert(id != null, "Cannot save Token entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        "Cannot save ShareableToken entity with non-string ID. " +
+        "Cannot save Token entity with non-string ID. " +
           'Considering using .toHex() to convert the "id" to a string.'
       );
-      store.set("ShareableToken", id.toString(), this);
+      store.set("Token", id.toString(), this);
     }
   }
 
-  static load(id: string): ShareableToken | null {
-    return changetype<ShareableToken | null>(store.get("ShareableToken", id));
+  static load(id: string): Token | null {
+    return changetype<Token | null>(store.get("Token", id));
   }
 
   get id(): string {
