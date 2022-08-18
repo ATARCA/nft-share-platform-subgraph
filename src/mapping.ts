@@ -7,7 +7,7 @@ import {
 import { Like, LikeERC721 } from "../generated/templates/LikeERC721TemplateDataSource/LikeERC721"
 import { Endorse } from "../generated/templates/EndorseERC721TemplateDataSource/EndorseERC721"
 import { EndorseERC721ProxyCreated, LikeERC721ProxyCreated, ShareableERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
-import { ExampleEntity, Project, Token } from "../generated/schema"
+import { Project, Token } from "../generated/schema"
 import { ShareableERC721TemplateDataSource, LikeERC721TemplateDataSource, EndorseERC721TemplateDataSource } from '../generated/templates'
 import { ShareableERC721 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
 

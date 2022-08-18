@@ -162,7 +162,8 @@ function createShareEvent(
     mockEvent.logType,
     mockEvent.block,
     mockEvent.transaction,
-    mockEvent.parameters
+    mockEvent.parameters,
+    mockEvent.receipt
   )
 
   let fromParam = new ethereum.EventParam('from', ethereum.Value.fromAddress(Address.fromString(fromAddress)))
@@ -192,7 +193,8 @@ function createLikeEvent(
     mockEvent.logType,
     mockEvent.block,
     mockEvent.transaction,
-    mockEvent.parameters
+    mockEvent.parameters,
+    mockEvent.receipt
   )
 
   let likerParam = new ethereum.EventParam('liker', ethereum.Value.fromAddress(Address.fromString(likerAddress)))
@@ -221,7 +223,8 @@ function createMintEvent(
     mockEvent.logType,
     mockEvent.block,
     mockEvent.transaction,
-    mockEvent.parameters
+    mockEvent.parameters,
+    mockEvent.receipt
   )
 
   let fromParam = new ethereum.EventParam('from', ethereum.Value.fromAddress(Address.fromString(fromAddress)))
