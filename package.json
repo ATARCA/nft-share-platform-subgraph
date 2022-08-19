@@ -3,8 +3,13 @@
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
-    "build": "graph build",
-    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ atarca/nft-share-platform-ropsten",
+    
+    "build-dev": "graph build --network ropsten",
+    "build-test": "graph build --network mumbai",
+
+    "deploy-dev": "graph deploy --network ropsten --node https://api.thegraph.com/deploy/ atarca/nft-share-platform-ropsten",
+    "deploy-test": "graph deploy --network mumbai --node https://api.thegraph.com/deploy/ atarca/nft-share-platform-mumbai",
+
     "create-local": "graph create --node http://localhost:8020/ atarca/nft-share-platform-ropsten",
     "remove-local": "graph remove --node http://localhost:8020/ atarca/nft-share-platform-ropsten",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 atarca/nft-share-platform-ropsten",
@@ -12,10 +17,10 @@
     "test": "docker run -it --rm --mount type=bind,source=<absolute/path/to/project>,target=/matchstick matchstick"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.26.0",
-    "@graphprotocol/graph-ts": "0.24.1"
+    "@graphprotocol/graph-cli": "0.33.0",
+    "@graphprotocol/graph-ts": "0.27.0"
   },
   "devDependencies": {
-    "matchstick-as": "0.3.0"
+    "matchstick-as": "0.5.0"
   }
 }

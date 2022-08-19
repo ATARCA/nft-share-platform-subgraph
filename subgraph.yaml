@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.4
 schema:
   file: ./schema.graphql
 dataSources:
@@ -6,12 +6,12 @@ dataSources:
     name: TalkoFactory
     network: ropsten
     source:
-      address: "0xb4CEA12BaF1529DFdE908016B81A2D668b321CDd"
       abi: TalkoFactory
+      address: "0xb4CEA12BaF1529DFdE908016B81A2D668b321CDd"
       startBlock: 12714830
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Project
@@ -19,7 +19,8 @@ dataSources:
         - name: TalkoFactory
           file: ./abis/TalkoFactory.sol/TalkoFactory.json
       eventHandlers:
-        - event: ShareableERC721ProxyCreated(indexed address,indexed address,string,string)
+        - event: ShareableERC721ProxyCreated(indexed address,indexed
+            address,string,string)
           handler: handleShareableERC721ContractCreated
         - event: LikeERC721ProxyCreated(indexed address,indexed address,string,string)
           handler: handleLikeERC721ContractCreated
@@ -34,10 +35,10 @@ templates:
       abi: ShareableERC721
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - ShareableToken
+        - Token
       abis:
         - name: ShareableERC721
           file: ./abis/ShareableERC721.sol/ShareableERC721.json
@@ -46,6 +47,8 @@ templates:
           handler: handleShare
         - event: Mint(indexed address,indexed address,indexed uint256)
           handler: handleMint
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleShareContractRoleGranted
       file: ./src/mapping.ts
   - kind: ethereum
     name: LikeERC721TemplateDataSource
@@ -54,10 +57,10 @@ templates:
       abi: LikeERC721
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - ShareableToken
+        - Token
       abis:
         - name: LikeERC721
           file: ./abis/LikeERC721.sol/LikeERC721.json
@@ -74,10 +77,10 @@ templates:
       abi: EndorseERC721
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - ShareableToken
+        - Token
       abis:
         - name: EndorseERC721
           file: ./abis/EndorseERC721.sol/EndorseERC721.json
