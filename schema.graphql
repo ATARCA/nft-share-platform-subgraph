@@ -1,9 +1,14 @@
 type Project @entity {
   id: ID! #project name
   owner: Bytes! # address
-  shareableContractAddress: Bytes!
-  likeContractAddress: Bytes!
-  endorseContractAddress: Bytes!
+  shareableContractAddress: Bytes
+  likeContractAddress: Bytes
+  endorseContractAddress: Bytes
+  categories: [Category!]!
+}
+
+type Category @entity {
+  id: ID! #entity hash
 }
 
 type Token @entity {
@@ -24,6 +29,8 @@ type Token @entity {
   
   likedParentToken: Token
   likeTokens: [Token!]! @derivedFrom(field: "likedParentToken") # tokens from that have liked this token
+
+  category: Category!
 }
 
 

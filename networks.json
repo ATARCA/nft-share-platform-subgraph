@@ -1,7 +1,7 @@
 {
   "ropsten": { 
       "TalkoFactory": { 
-          "address": "0xb4CEA12BaF1529DFdE908016B81A2D668b321CDd", 
+          "address": "0xd0491b9Ec2E52a9E067c287C04577b2EF3BA4e7C", 
           "startBlock": 12714830 
       }
   },
