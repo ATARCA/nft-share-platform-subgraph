@@ -8,7 +8,7 @@ type Project @entity {
 }
 
 type Category @entity {
-  id: ID! #entity hash
+  id: ID! #name of category
 }
 
 type Token @entity {

@@ -143,7 +143,7 @@ export function handleMint(event: Mint): void {
 
   const tokenEntityId = getTokenEntityIdFromAddress(shareContractAddress, event.params.tokenId)
 
-  const tokenCategoryId = event.params.categoryHash.toHex()
+  const tokenCategoryId = event.params.category
   log.warning('seen category {}', [ tokenCategoryId ])
   const category = getOrCreateCategory(tokenCategoryId)
 

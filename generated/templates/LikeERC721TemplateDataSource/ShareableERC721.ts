@@ -105,8 +105,8 @@ export class Mint__Params {
     return this._event.parameters[2].value.toBigInt();
   }
 
-  get categoryHash(): Bytes {
-    return this._event.parameters[3].value.toBytes();
+  get category(): string {
+    return this._event.parameters[3].value.toString();
   }
 }
 
