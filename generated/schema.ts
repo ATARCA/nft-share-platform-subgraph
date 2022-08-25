@@ -42,13 +42,13 @@ export class Project extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get owner(): Bytes {
-    let value = this.get("owner");
-    return value!.toBytes();
+  get operators(): Array<Bytes> {
+    let value = this.get("operators");
+    return value!.toBytesArray();
   }
 
-  set owner(value: Bytes) {
-    this.set("owner", Value.fromBytes(value));
+  set operators(value: Array<Bytes>) {
+    this.set("operators", Value.fromBytesArray(value));
   }
 
   get shareableContractAddress(): Bytes | null {
