@@ -104,6 +104,10 @@ export class Mint__Params {
   get tokenId(): BigInt {
     return this._event.parameters[2].value.toBigInt();
   }
+
+  get category(): string {
+    return this._event.parameters[3].value.toString();
+  }
 }
 
 export class RoleAdminChanged extends ethereum.Event {
@@ -706,6 +710,10 @@ export class MintCall__Inputs {
 
   get account(): Address {
     return this._call.inputValues[0].value.toAddress();
+  }
+
+  get category(): string {
+    return this._call.inputValues[1].value.toString();
   }
 }
 

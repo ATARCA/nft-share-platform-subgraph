@@ -7,7 +7,7 @@ import {
 import { Like, LikeERC721 } from "../generated/templates/LikeERC721TemplateDataSource/LikeERC721"
 import { Endorse } from "../generated/templates/EndorseERC721TemplateDataSource/EndorseERC721"
 import { EndorseERC721ProxyCreated, LikeERC721ProxyCreated, ShareableERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
-import { Project, Token } from "../generated/schema"
+import { Category, Project, Token } from "../generated/schema"
 import { ShareableERC721TemplateDataSource, LikeERC721TemplateDataSource, EndorseERC721TemplateDataSource } from '../generated/templates'
 import { ShareableERC721 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
 
@@ -24,7 +24,7 @@ export function handleShareableERC721ContractCreated(event: ShareableERC721Proxy
   let project = Project.load(projectName)
 
   if (!project) {
-    project = new Project(projectName)
+    project = createProject(projectName)
   }
 
   project.shareableContractAddress = event.params._sproxy
@@ -37,13 +37,19 @@ export function handleShareableERC721ContractCreated(event: ShareableERC721Proxy
 
 }
 
+function createProject(projectName: string): Project {
+  const project = new Project(projectName)
+  project.categories = []
+  return project
+}
+
 export function handleLikeERC721ContractCreated(event: LikeERC721ProxyCreated): void {
   const projectName = event.params._name.toString()
 
   let project = Project.load(projectName)
 
   if (!project) {
-    project = new Project(projectName)
+    project = createProject(projectName)
   }
 
   project.likeContractAddress = event.params._lproxy
@@ -61,7 +67,7 @@ export function handleEndorseERC721ContractCreated(event: EndorseERC721ProxyCrea
   let project = Project.load(projectName)
 
   if (!project) {
-    project = new Project(projectName)
+    project = createProject(projectName)
   }
 
   project.endorseContractAddress = event.params._eproxy
@@ -119,6 +125,7 @@ export function handleShare(event: Share): void {
   newToken.isLikeToken = false
   newToken.contractAddress = shareContractAddress
   newToken.metadataUri = shareContract.tokenURI(event.params.tokenId)
+  newToken.category = parentToken.category
 
   if (project) newToken.project = project.id
   else log.critical('Project does not exist {}', [shareContract.name()])
@@ -136,6 +143,17 @@ export function handleMint(event: Mint): void {
 
   const tokenEntityId = getTokenEntityIdFromAddress(shareContractAddress, event.params.tokenId)
 
+  const tokenCategoryId = event.params.category
+  log.warning('seen category {}', [ tokenCategoryId ])
+  const category = getOrCreateCategory(tokenCategoryId)
+
+  if (project && !project.categories.includes(category.id)) {
+    const categories = project.categories
+    categories.push(category.id)
+    project.categories = categories
+    project.save()
+  }
+  
   const token = new Token(tokenEntityId)
   token.ownerAddress = event.params.to
   token.isOriginal = true 
@@ -144,12 +162,22 @@ export function handleMint(event: Mint): void {
   token.tokenId = event.params.tokenId
   token.contractAddress = shareContractAddress
   token.metadataUri = shareContract.tokenURI(event.params.tokenId)
+  token.category = category.id
 
   if (project) token.project = project.id
   else log.critical('Project does not exist {}', [shareContract.name()])
-  
 
   token.save()
+}
+
+function getOrCreateCategory(categoryId: string): Category {
+  let category = Category.load(categoryId)
+  if (!category) {
+    category = new Category(categoryId)
+    category.save()
+  }
+
+  return category
 }
 
 export function handleLike(event: Like): void {
@@ -183,7 +211,8 @@ export function handleLike(event: Like): void {
   likeToken.tokenId = event.params.likeTokenId
   likeToken.likedParentToken = parentToken.id
   likeToken.metadataUri = likeContract.tokenURI(event.params.likeTokenId)
-  
+  likeToken.category = parentToken.category
+
   if (project) likeToken.project = project.id
   else log.critical('Project does not exist {}', [shareContract.name()])
 

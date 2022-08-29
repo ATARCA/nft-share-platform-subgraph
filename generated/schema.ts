@@ -51,31 +51,96 @@ export class Project extends Entity {
     this.set("owner", Value.fromBytes(value));
   }
 
-  get shareableContractAddress(): Bytes {
+  get shareableContractAddress(): Bytes | null {
     let value = this.get("shareableContractAddress");
-    return value!.toBytes();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
   }
 
-  set shareableContractAddress(value: Bytes) {
-    this.set("shareableContractAddress", Value.fromBytes(value));
+  set shareableContractAddress(value: Bytes | null) {
+    if (!value) {
+      this.unset("shareableContractAddress");
+    } else {
+      this.set("shareableContractAddress", Value.fromBytes(<Bytes>value));
+    }
   }
 
-  get likeContractAddress(): Bytes {
+  get likeContractAddress(): Bytes | null {
     let value = this.get("likeContractAddress");
-    return value!.toBytes();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
   }
 
-  set likeContractAddress(value: Bytes) {
-    this.set("likeContractAddress", Value.fromBytes(value));
+  set likeContractAddress(value: Bytes | null) {
+    if (!value) {
+      this.unset("likeContractAddress");
+    } else {
+      this.set("likeContractAddress", Value.fromBytes(<Bytes>value));
+    }
   }
 
-  get endorseContractAddress(): Bytes {
+  get endorseContractAddress(): Bytes | null {
     let value = this.get("endorseContractAddress");
-    return value!.toBytes();
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
   }
 
-  set endorseContractAddress(value: Bytes) {
-    this.set("endorseContractAddress", Value.fromBytes(value));
+  set endorseContractAddress(value: Bytes | null) {
+    if (!value) {
+      this.unset("endorseContractAddress");
+    } else {
+      this.set("endorseContractAddress", Value.fromBytes(<Bytes>value));
+    }
+  }
+
+  get categories(): Array<string> {
+    let value = this.get("categories");
+    return value!.toStringArray();
+  }
+
+  set categories(value: Array<string>) {
+    this.set("categories", Value.fromStringArray(value));
+  }
+}
+
+export class Category extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Category entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Category must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Category", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Category | null {
+    return changetype<Category | null>(store.get("Category", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
   }
 }
 
@@ -265,5 +330,14 @@ export class Token extends Entity {
 
   set likeTokens(value: Array<string>) {
     this.set("likeTokens", Value.fromStringArray(value));
+  }
+
+  get category(): string {
+    let value = this.get("category");
+    return value!.toString();
+  }
+
+  set category(value: string) {
+    this.set("category", Value.fromString(value));
   }
 }
