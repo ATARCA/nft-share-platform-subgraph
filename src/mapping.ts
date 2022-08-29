@@ -6,7 +6,7 @@ import {
 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
 import { Like, LikeERC721 } from "../generated/templates/LikeERC721TemplateDataSource/LikeERC721"
 import { Endorse } from "../generated/templates/EndorseERC721TemplateDataSource/EndorseERC721"
-import { EndorseERC721ProxyCreated, LikeERC721ProxyCreated, ShareableERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
+import { EndorseERC721ProxyCreated, LikeERC721ProxyCreated, RoleRevoked, ShareableERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
 import { Category, Project, Token } from "../generated/schema"
 import { ShareableERC721TemplateDataSource, LikeERC721TemplateDataSource, EndorseERC721TemplateDataSource } from '../generated/templates'
 import { ShareableERC721 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
@@ -28,7 +28,9 @@ export function handleShareableERC721ContractCreated(event: ShareableERC721Proxy
   }
 
   project.shareableContractAddress = event.params._sproxy
-  project.owner = event.params._owner
+  const operators = project.operators 
+  operators.push( event.params._owner )
+  project.operators = operators
   project.save()
 
   ShareableERC721TemplateDataSource.create(event.params._sproxy)
@@ -40,6 +42,7 @@ export function handleShareableERC721ContractCreated(event: ShareableERC721Proxy
 function createProject(projectName: string): Project {
   const project = new Project(projectName)
   project.categories = []
+  project.operators = []
   return project
 }
 
@@ -88,14 +91,46 @@ export function handleShareContractRoleGranted(event: RoleGranted): void {
     return
   }
 
-  if (event.params.role === shareContract.OPERATOR_ROLE()) {
+  if (event.params.role == shareContract.OPERATOR_ROLE()) {
     const newOperatorAddress = event.params.account
-    project.owner = newOperatorAddress
+    const operators = project.operators
+    operators.push(newOperatorAddress)
+    project.operators = operators
     project.save()
+    log.info('Adding operator for {} {}', [shareContract.name(), newOperatorAddress.toHexString()])
+
   }
 }
 
-//TODO implement burning - transfer to zero address is burning
+export function handleShareContractRoleRevoked(event: RoleRevoked): void {
+  const shareContractAddress = event.address
+  const shareContract = ShareableERC721.bind(shareContractAddress)
+  const project = Project.load(shareContract.name())
+
+  if (!project) {
+    log.critical('Project not found name: {} share contract address: {} ', [shareContract.name(),shareContractAddress.toHexString()])
+    return
+  }
+
+  if (event.params.role == shareContract.OPERATOR_ROLE()) {
+    const revokedOperatorAddress = event.params.account
+    const newOperators:Bytes[] = []
+    const operators = project.operators
+
+    for (let i: i32 = 0; i<operators.length; i++) {
+      if (Address.fromBytes(operators[i]) != revokedOperatorAddress) {
+        newOperators.push(operators[i])
+      }
+      else {
+        log.info('Revoking operator for {} {}', [shareContract.name(), operators[i].toHexString()])
+
+      }
+    }
+
+    project.operators = newOperators
+    project.save()
+  }
+}
 
 export function handleShare(event: Share): void {
 
@@ -144,7 +179,7 @@ export function handleMint(event: Mint): void {
   const tokenEntityId = getTokenEntityIdFromAddress(shareContractAddress, event.params.tokenId)
 
   const tokenCategoryId = event.params.category
-  log.warning('seen category {}', [ tokenCategoryId ])
+
   const category = getOrCreateCategory(tokenCategoryId)
 
   if (project && !project.categories.includes(category.id)) {
@@ -201,7 +236,6 @@ export function handleLike(event: Like): void {
   const tokenEntityId = getTokenEntityIdFromAddress(likeContractAddress, event.params.likeTokenId)
 
   const likeToken = new Token(tokenEntityId)
-
   likeToken.ownerAddress = event.params.liker
   likeToken.contractAddress = likeContractAddress
   likeToken.isOriginal = false 

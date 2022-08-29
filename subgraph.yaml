@@ -49,6 +49,8 @@ templates:
           handler: handleMint
         - event: RoleGranted(indexed bytes32,indexed address,indexed address)
           handler: handleShareContractRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleShareContractRoleRevoked
       file: ./src/mapping.ts
   - kind: ethereum
     name: LikeERC721TemplateDataSource

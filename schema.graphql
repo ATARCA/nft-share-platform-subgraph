@@ -1,6 +1,6 @@
 type Project @entity {
   id: ID! #project name
-  owner: Bytes! # address
+  operators: [Bytes!]! # addresses
   shareableContractAddress: Bytes
   likeContractAddress: Bytes
   endorseContractAddress: Bytes
