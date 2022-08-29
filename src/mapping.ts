@@ -108,7 +108,7 @@ export function handleShareContractRoleRevoked(event: RoleRevoked): void {
   const project = Project.load(shareContract.name())
 
   if (!project) {
-    log.critical('Project not found name: {} share contract address: {}', [shareContract.name(),shareContractAddress.toHexString()])
+    log.critical('Project not found name: {} share contract address: {} ', [shareContract.name(),shareContractAddress.toHexString()])
     return
   }
 
@@ -236,7 +236,6 @@ export function handleLike(event: Like): void {
   const tokenEntityId = getTokenEntityIdFromAddress(likeContractAddress, event.params.likeTokenId)
 
   const likeToken = new Token(tokenEntityId)
-
   likeToken.ownerAddress = event.params.liker
   likeToken.contractAddress = likeContractAddress
   likeToken.isOriginal = false 
