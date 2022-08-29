@@ -7,8 +7,8 @@
   },
   "mumbai": {
       "TalkoFactory": {
-          "address": "0xc4CEA12BaF1529DFdE908016B81A2D668b321CDd",
-          "startBlock": 123
+        "address": "0x7eCfE50e501683Af7Ad31E7417f846A8bd7c8467",
+        "startBlock": 27786023
       }
   }
 }
