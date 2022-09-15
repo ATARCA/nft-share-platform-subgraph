@@ -157,6 +157,7 @@ export function handleShare(event: Share): void {
   newToken.tokenId = event.params.tokenId
   newToken.isOriginal = false
   newToken.isSharedInstance = true
+  newToken.isOriginalOrShared = true
   newToken.isLikeToken = false
   newToken.contractAddress = shareContractAddress
   newToken.metadataUri = shareContract.tokenURI(event.params.tokenId)
@@ -193,6 +194,7 @@ export function handleMint(event: Mint): void {
   token.ownerAddress = event.params.to
   token.isOriginal = true 
   token.isSharedInstance = false
+  token.isOriginalOrShared = true
   token.isLikeToken = false
   token.tokenId = event.params.tokenId
   token.contractAddress = shareContractAddress
@@ -240,6 +242,7 @@ export function handleLike(event: Like): void {
   likeToken.contractAddress = likeContractAddress
   likeToken.isOriginal = false 
   likeToken.isSharedInstance = false
+  likeToken.isOriginalOrShared = false
   likeToken.isLikeToken = true
 
   likeToken.tokenId = event.params.likeTokenId

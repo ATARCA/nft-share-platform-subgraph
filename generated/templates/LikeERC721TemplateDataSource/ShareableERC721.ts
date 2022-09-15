@@ -414,6 +414,52 @@ export class ShareableERC721 extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBoolean());
   }
 
+  isDerivedFrom(tokenId: BigInt): BigInt {
+    let result = super.call(
+      "isDerivedFrom",
+      "isDerivedFrom(uint256):(uint256)",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
+    );
+
+    return result[0].toBigInt();
+  }
+
+  try_isDerivedFrom(tokenId: BigInt): ethereum.CallResult<BigInt> {
+    let result = super.tryCall(
+      "isDerivedFrom",
+      "isDerivedFrom(uint256):(uint256)",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBigInt());
+  }
+
+  isOriginalToken(tokenId: BigInt): boolean {
+    let result = super.call(
+      "isOriginalToken",
+      "isOriginalToken(uint256):(bool)",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
+    );
+
+    return result[0].toBoolean();
+  }
+
+  try_isOriginalToken(tokenId: BigInt): ethereum.CallResult<boolean> {
+    let result = super.tryCall(
+      "isOriginalToken",
+      "isOriginalToken(uint256):(bool)",
+      [ethereum.Value.fromUnsignedBigInt(tokenId)]
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toBoolean());
+  }
+
   name(): string {
     let result = super.call("name", "name():(string)", []);
 
@@ -615,6 +661,36 @@ export class ApproveCall__Outputs {
   _call: ApproveCall;
 
   constructor(call: ApproveCall) {
+    this._call = call;
+  }
+}
+
+export class BurnCall extends ethereum.Call {
+  get inputs(): BurnCall__Inputs {
+    return new BurnCall__Inputs(this);
+  }
+
+  get outputs(): BurnCall__Outputs {
+    return new BurnCall__Outputs(this);
+  }
+}
+
+export class BurnCall__Inputs {
+  _call: BurnCall;
+
+  constructor(call: BurnCall) {
+    this._call = call;
+  }
+
+  get tokenId(): BigInt {
+    return this._call.inputValues[0].value.toBigInt();
+  }
+}
+
+export class BurnCall__Outputs {
+  _call: BurnCall;
+
+  constructor(call: BurnCall) {
     this._call = call;
   }
 }
