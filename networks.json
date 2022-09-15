@@ -1,13 +1,13 @@
 {
   "goerli": { 
       "TalkoFactory": { 
-          "address": "0x25EC0FC1D2538A2D1761B6cF7025748C0cDc821b", 
+          "address": "0x94Cf6A9d6D92Ec103504298ABe428f8405C11985", 
           "startBlock": 7451273 
       }
   },
   "mumbai": {
       "TalkoFactory": {
-        "address": "0x7eCfE50e501683Af7Ad31E7417f846A8bd7c8467",
+        "address": "0xdFC209D462Fc1d92C2e6ba64A2BAcc806d75D649",
         "startBlock": 27786023
       }
   }
