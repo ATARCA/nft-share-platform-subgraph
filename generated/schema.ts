@@ -349,4 +349,13 @@ export class Token extends Entity {
   set category(value: string) {
     this.set("category", Value.fromString(value));
   }
+
+  get isBurned(): boolean {
+    let value = this.get("isBurned");
+    return value!.toBoolean();
+  }
+
+  set isBurned(value: boolean) {
+    this.set("isBurned", Value.fromBoolean(value));
+  }
 }

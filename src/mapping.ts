@@ -2,7 +2,8 @@ import { Address, BigInt, Bytes, log } from "@graphprotocol/graph-ts"
 import {
   Share,
   Mint,
-  RoleGranted
+  RoleGranted,
+  Transfer
 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
 import { Like, LikeERC721 } from "../generated/templates/LikeERC721TemplateDataSource/LikeERC721"
 import { Endorse } from "../generated/templates/EndorseERC721TemplateDataSource/EndorseERC721"
@@ -10,6 +11,8 @@ import { EndorseERC721ProxyCreated, LikeERC721ProxyCreated, RoleRevoked, Shareab
 import { Category, Project, Token } from "../generated/schema"
 import { ShareableERC721TemplateDataSource, LikeERC721TemplateDataSource, EndorseERC721TemplateDataSource } from '../generated/templates'
 import { ShareableERC721 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export function getTokenEntityId(contractAddress: String, tokenId: BigInt): string {
   return `${contractAddress.toLowerCase()}-${tokenId}`
@@ -138,7 +141,6 @@ export function handleShare(event: Share): void {
   const shareContract = ShareableERC721.bind(shareContractAddress)
   const project = Project.load(shareContract.name())
 
-
   const newTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.tokenId)
   const parentTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.derivedFromTokenId)
   
@@ -162,6 +164,7 @@ export function handleShare(event: Share): void {
   newToken.contractAddress = shareContractAddress
   newToken.metadataUri = shareContract.tokenURI(event.params.tokenId)
   newToken.category = parentToken.category
+  newToken.isBurned = false
 
   if (project) newToken.project = project.id
   else log.critical('Project does not exist {}', [shareContract.name()])
@@ -200,6 +203,7 @@ export function handleMint(event: Mint): void {
   token.contractAddress = shareContractAddress
   token.metadataUri = shareContract.tokenURI(event.params.tokenId)
   token.category = category.id
+  token.isBurned = false
 
   if (project) token.project = project.id
   else log.critical('Project does not exist {}', [shareContract.name()])
@@ -238,6 +242,7 @@ export function handleLike(event: Like): void {
   const tokenEntityId = getTokenEntityIdFromAddress(likeContractAddress, event.params.likeTokenId)
 
   const likeToken = new Token(tokenEntityId)
+//TODO update and fix tests
   likeToken.ownerAddress = event.params.liker
   likeToken.contractAddress = likeContractAddress
   likeToken.isOriginal = false 
@@ -249,6 +254,7 @@ export function handleLike(event: Like): void {
   likeToken.likedParentToken = parentToken.id
   likeToken.metadataUri = likeContract.tokenURI(event.params.likeTokenId)
   likeToken.category = parentToken.category
+  likeToken.isBurned = false
 
   if (project) likeToken.project = project.id
   else log.critical('Project does not exist {}', [shareContract.name()])
@@ -258,3 +264,32 @@ export function handleLike(event: Like): void {
 
 export function handleEndorse(event: Endorse): void {
 }
+
+export function handleShareTokenTransferred(event: Transfer): void {
+  handleTokenTransferred(event)
+}
+
+export function handleLikeTokenTransferred(event: Transfer): void {
+  handleTokenTransferred(event)
+}
+
+function handleTokenTransferred(event: Transfer): void {
+  if (event.params.to.toHexString() == ZERO_ADDRESS) {
+    handleTokenBurned(event)
+  }
+}
+
+function handleTokenBurned(event: Transfer): void {
+  const contractAddress = event.address
+  const burnedTokenEntityId = getTokenEntityIdFromAddress(contractAddress, event.params.tokenId)
+
+  let burnedToken = Token.load(burnedTokenEntityId)
+
+  if (!burnedToken) {
+    log.critical('Token to be burned not found. Event address {} params.tokenId {}', [event.address.toHexString(),event.params.tokenId.toString()])
+  } else {
+    burnedToken.isBurned = true
+    burnedToken.save()
+  }
+}
+
