@@ -165,6 +165,7 @@ export function handleShare(event: Share): void {
   newToken.metadataUri = shareContract.tokenURI(event.params.tokenId)
   newToken.category = parentToken.category
   newToken.isBurned = false
+  newToken.mintBlock = event.block.number
 
   if (project) newToken.project = project.id
   else log.critical('Project does not exist {}', [shareContract.name()])
@@ -204,6 +205,7 @@ export function handleMint(event: Mint): void {
   token.metadataUri = shareContract.tokenURI(event.params.tokenId)
   token.category = category.id
   token.isBurned = false
+  token.mintBlock = event.block.number
 
   if (project) token.project = project.id
   else log.critical('Project does not exist {}', [shareContract.name()])
@@ -242,7 +244,7 @@ export function handleLike(event: Like): void {
   const tokenEntityId = getTokenEntityIdFromAddress(likeContractAddress, event.params.likeTokenId)
 
   const likeToken = new Token(tokenEntityId)
-//TODO update and fix tests
+
   likeToken.ownerAddress = event.params.liker
   likeToken.contractAddress = likeContractAddress
   likeToken.isOriginal = false 
@@ -255,6 +257,8 @@ export function handleLike(event: Like): void {
   likeToken.metadataUri = likeContract.tokenURI(event.params.likeTokenId)
   likeToken.category = parentToken.category
   likeToken.isBurned = false
+  likeToken.mintBlock = event.block.number
+
 
   if (project) likeToken.project = project.id
   else log.critical('Project does not exist {}', [shareContract.name()])
