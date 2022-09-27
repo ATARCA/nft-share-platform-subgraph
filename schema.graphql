@@ -19,6 +19,7 @@ type Token @entity {
   project: Project!
   isOriginal: Boolean! #token is original minted by the project admin
   isSharedInstance: Boolean! #token was shared by the parent token owner with a 3rd person
+  isOriginalOrShared: Boolean! #combination of 2 fields isOriginal or isSharedInstance
   isLikeToken: Boolean! #token represent like of an original or shared token
   
   tokenId: BigInt
@@ -31,6 +32,7 @@ type Token @entity {
   likeTokens: [Token!]! @derivedFrom(field: "likedParentToken") # tokens from that have liked this token
 
   category: Category!
+  isBurned: Boolean!
 }
 
 

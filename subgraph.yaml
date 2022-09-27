@@ -7,7 +7,7 @@ dataSources:
     network: goerli
     source:
       abi: TalkoFactory
-      address: "0x25EC0FC1D2538A2D1761B6cF7025748C0cDc821b"
+      address: "0x94Cf6A9d6D92Ec103504298ABe428f8405C11985"
       startBlock: 7451273
     mapping:
       kind: ethereum/events
@@ -51,6 +51,8 @@ templates:
           handler: handleShareContractRoleGranted
         - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
           handler: handleShareContractRoleRevoked
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleShareTokenTransferred
       file: ./src/mapping.ts
   - kind: ethereum
     name: LikeERC721TemplateDataSource
@@ -71,6 +73,8 @@ templates:
       eventHandlers:
         - event: Like(indexed address,indexed address,indexed uint256,uint256)
           handler: handleLike
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleLikeTokenTransferred
       file: ./src/mapping.ts
   - kind: ethereum
     name: EndorseERC721TemplateDataSource

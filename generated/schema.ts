@@ -237,6 +237,15 @@ export class Token extends Entity {
     this.set("isSharedInstance", Value.fromBoolean(value));
   }
 
+  get isOriginalOrShared(): boolean {
+    let value = this.get("isOriginalOrShared");
+    return value!.toBoolean();
+  }
+
+  set isOriginalOrShared(value: boolean) {
+    this.set("isOriginalOrShared", Value.fromBoolean(value));
+  }
+
   get isLikeToken(): boolean {
     let value = this.get("isLikeToken");
     return value!.toBoolean();
@@ -339,5 +348,14 @@ export class Token extends Entity {
 
   set category(value: string) {
     this.set("category", Value.fromString(value));
+  }
+
+  get isBurned(): boolean {
+    let value = this.get("isBurned");
+    return value!.toBoolean();
+  }
+
+  set isBurned(value: boolean) {
+    this.set("isBurned", Value.fromBoolean(value));
   }
 }
