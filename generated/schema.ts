@@ -358,4 +358,13 @@ export class Token extends Entity {
   set isBurned(value: boolean) {
     this.set("isBurned", Value.fromBoolean(value));
   }
+
+  get mintBlock(): BigInt {
+    let value = this.get("mintBlock");
+    return value!.toBigInt();
+  }
+
+  set mintBlock(value: BigInt) {
+    this.set("mintBlock", Value.fromBigInt(value));
+  }
 }

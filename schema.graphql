@@ -33,6 +33,7 @@ type Token @entity {
 
   category: Category!
   isBurned: Boolean!
+  mintBlock: BigInt!
 }
 
 
