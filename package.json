@@ -6,9 +6,11 @@
     
     "build-dev": "graph build --network goerli",
     "build-test": "graph build --network mumbai",
+    "build-prod": "graph build --network matic",
 
     "deploy-dev": "graph deploy --network goerli --node https://api.thegraph.com/deploy/ atarca/nft-share-platform-goerli",
     "deploy-test": "graph deploy --network mumbai --node https://api.thegraph.com/deploy/ atarca/nft-share-platform-mumbai",
+    "deploy-prod": "graph deploy --network matic --node https://api.thegraph.com/deploy/ atarca/talko",
 
     "create-local": "graph create --node http://localhost:8020/ atarca/nft-share-platform-goerli",
     "remove-local": "graph remove --node http://localhost:8020/ atarca/nft-share-platform-goerli",
