@@ -10,5 +10,11 @@
         "address": "0xdFC209D462Fc1d92C2e6ba64A2BAcc806d75D649",
         "startBlock": 27786023
       }
-  }
+  },
+  "matic": {
+    "TalkoFactory": {
+      "address": "0x4E7D69f60a233e25ddDC6879fD315bf44c7444B9",
+      "startBlock": 33757444
+    }
+}
 }
