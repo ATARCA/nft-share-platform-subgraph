@@ -3,10 +3,11 @@ import { Address, BigInt } from '@graphprotocol/graph-ts/common/numbers'
 import { describe, clearStore, test, assert, newMockEvent, createMockedFunction } from 'matchstick-as/assembly/index'
 import { Like } from '../generated/templates/LikeERC721TemplateDataSource/LikeERC721'
 import { Project, Token } from '../generated/schema'
-import { Mint, Share, Transfer } from '../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721'
-import { getTokenEntityId, handleLike, handleLikeERC721ContractCreated, handleMint, handleShare, handleShareableERC721ContractCreated, handleTokenTransferred, ZERO_ADDRESS } from '../src/mapping'
+import { Mint, Share, ShareableERC721, Transfer } from '../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721'
+import { getTokenEntityId, handleLike, handleLikeERC721ContractCreated, handleMint, handleShare, handleShareableERC721ContractCreated, handleShareContractRoleGranted, handleShareContractRoleRevoked, handleTokenTransferred, ZERO_ADDRESS } from '../src/mapping'
 import { LikeERC721ProxyCreated, ShareableERC721ProxyCreated } from '../generated/TalkoFactory/TalkoFactory'
-import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC721ProxyCreatedEvent, createLikeERC721ProxyCreatedEvent, createTransferEvent } from './eventHelpers'
+import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC721ProxyCreatedEvent, createLikeERC721ProxyCreatedEvent, createTransferEvent, createRoleGrantedEvent, createRoleRevokedEvent } from './eventHelpers'
+import { Bytes } from '@graphprotocol/graph-ts'
 
   export const likeContractAddress = '0xFb6394BC5EeE2F9f00ab9df3c8c489A4647f0Daf'
   export const shareTokenContractAddress = "0xe283Bd7c79188b594e9C19E9032ff365A37Cc4fF".toLowerCase()
@@ -14,6 +15,7 @@ import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC7
 
   const ownerAddress = '0xE54BB854621E8CA08666082ABE50a9f4316469BB'
   const operatorAddress = "0xA86cb4378Cdbc327eF950789c81BcBcc3aa73D21".toLowerCase()
+  const additionalOperatorAddress = "0x7c7379531b2aEE82e4Ca06D4175D13b9CBEafd49".toLowerCase()
 
   const address1 = '0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'
   const address2 = '0x79205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7'
@@ -27,6 +29,8 @@ import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC7
   const likeTokenSymbol = 'LIKE'
 
   const tokenCategory = "Main category"
+
+  const OPERATOR_ROLE_BYTES = Bytes.fromHexString('0x97667070c54ef182b0f5858b034beac1b6f3089aa2d3188bb1e8929f4fa9b929')
 
   test('can create newly minted token', () => {
     clearStore()
@@ -154,6 +158,42 @@ import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC7
 
   })
 
+  test('project has operator', () => {
+    clearStore()
+    
+    mockDeployShareContract()
+
+    assert.fieldEquals('Project', projectName, 'operators', `[${operatorAddress}]` )
+
+  })
+
+  test('project has additional operator', () => {
+    clearStore()
+    
+    mockDeployShareContract()
+
+    const roleGrantedEvent = createRoleGrantedEvent(OPERATOR_ROLE_BYTES, additionalOperatorAddress, operatorAddress)
+    handleShareContractRoleGranted(roleGrantedEvent)
+
+    assert.fieldEquals('Project', projectName, 'operators', `[${operatorAddress}, ${additionalOperatorAddress}]` )
+
+  })
+
+  test('project operator can be removed', () => {
+    clearStore()
+    
+    mockDeployShareContract()
+
+    const roleGrantedEvent = createRoleGrantedEvent(OPERATOR_ROLE_BYTES, additionalOperatorAddress, operatorAddress)
+    handleShareContractRoleGranted(roleGrantedEvent)
+
+    const roleRevokedEvent = createRoleRevokedEvent(OPERATOR_ROLE_BYTES, operatorAddress, operatorAddress)
+    handleShareContractRoleRevoked(roleRevokedEvent)
+
+    assert.fieldEquals('Project', projectName, 'operators', `[${additionalOperatorAddress}]` )
+
+  })
+
 function burnToken(tokenId: i32): void {
   const burnEvent = createTransferEvent(ownerAddress, ZERO_ADDRESS, tokenId)
   handleTokenTransferred(burnEvent)
@@ -177,6 +217,11 @@ function mockShareContractTokenUri(tokenId: string): void {
   .returns([ethereum.Value.fromString(buildUriForToken(shareTokenContractAddress,tokenId))])
 }
 
+function mockShareCotractOperatorRoleConstant(): void {
+  createMockedFunction(Address.fromString(shareTokenContractAddress),"OPERATOR_ROLE", "OPERATOR_ROLE():(bytes32)")
+  .returns([ethereum.Value.fromBytes(OPERATOR_ROLE_BYTES)])
+}
+
 function mockLikeContractTokenUri(tokenId: string): void {
   createMockedFunction(Address.fromString(likeContractAddress),"tokenURI", "tokenURI(uint256):(string)")
   .withArgs([ethereum.Value.fromUnsignedBigInt(BigInt.fromString(tokenId))])
@@ -192,13 +237,9 @@ function buildUriForToken(contractAddress: string, tokenId: string): string {
   return mockedTokenUri+shareTokenContractAddress+'-'+tokenId
 }
 
-function createMockProject(): void {
-  let project = new Project(projectName)
-  project.save()
-}
-
 function mockDeployShareContract(): void {
   mockShareContractName()
+  mockShareCotractOperatorRoleConstant()
 
   const shareContractDeployedEvent = createShareableERC721ProxyCreatedEvent(shareTokenContractAddress, 
     operatorAddress, 

@@ -1,8 +1,8 @@
-import { Address, ethereum } from "@graphprotocol/graph-ts"
+import { Address, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import { newMockEvent } from "matchstick-as"
 import { ShareableERC721ProxyCreated, LikeERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
 import { Like } from "../generated/templates/LikeERC721TemplateDataSource/LikeERC721"
-import { Share, Mint, Transfer } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
+import { Share, Mint, Transfer, RoleGranted, RoleRevoked } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
 import { shareTokenContractAddress, likeContractAddress, factoryContractAddress } from "./nft-platform.test"
 
 export function createShareEvent(
@@ -186,4 +186,60 @@ export function createShareEvent(
     newDeployEvent.parameters.push(_symbolParam)
   
     return newDeployEvent
+  }
+
+  export function createRoleGrantedEvent(
+    role: Bytes,
+    account: string,
+    sender: string,
+  ): RoleGranted {
+    let mockEvent = newMockEvent()
+    let newRoleGrantedEvent = new RoleGranted(
+      Address.fromString(shareTokenContractAddress),
+      mockEvent.logIndex,
+      mockEvent.transactionLogIndex,
+      mockEvent.logType,
+      mockEvent.block,
+      mockEvent.transaction,
+      mockEvent.parameters,
+      mockEvent.receipt
+    )
+  
+    let roleParam = new ethereum.EventParam('role', ethereum.Value.fromBytes(role))
+    let accountParam = new ethereum.EventParam('account', ethereum.Value.fromAddress(Address.fromString(account)))
+    let senderParam = new ethereum.EventParam('sender', ethereum.Value.fromString(sender))
+  
+    newRoleGrantedEvent.parameters.push(roleParam)
+    newRoleGrantedEvent.parameters.push(accountParam)
+    newRoleGrantedEvent.parameters.push(senderParam)
+
+    return newRoleGrantedEvent
+  }
+
+  export function createRoleRevokedEvent(
+    role: Bytes,
+    account: string,
+    sender: string,
+  ): RoleRevoked {
+    let mockEvent = newMockEvent()
+    let newRoleRevokedEvent = new RoleRevoked(
+      Address.fromString(shareTokenContractAddress),
+      mockEvent.logIndex,
+      mockEvent.transactionLogIndex,
+      mockEvent.logType,
+      mockEvent.block,
+      mockEvent.transaction,
+      mockEvent.parameters,
+      mockEvent.receipt
+    )
+  
+    let roleParam = new ethereum.EventParam('role', ethereum.Value.fromBytes(role))
+    let accountParam = new ethereum.EventParam('account', ethereum.Value.fromAddress(Address.fromString(account)))
+    let senderParam = new ethereum.EventParam('sender', ethereum.Value.fromString(sender))
+  
+    newRoleRevokedEvent.parameters.push(roleParam)
+    newRoleRevokedEvent.parameters.push(accountParam)
+    newRoleRevokedEvent.parameters.push(senderParam)
+      
+    return newRoleRevokedEvent
   }
