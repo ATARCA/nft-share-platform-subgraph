@@ -1,6 +1,6 @@
 import { ethereum } from '@graphprotocol/graph-ts/chain/ethereum'
 import { Address, BigInt } from '@graphprotocol/graph-ts/common/numbers'
-import { clearStore, test, assert, newMockEvent, createMockedFunction } from 'matchstick-as/assembly/index'
+import { describe, clearStore, test, assert, newMockEvent, createMockedFunction } from 'matchstick-as/assembly/index'
 import { Like } from '../generated/templates/LikeERC721TemplateDataSource/LikeERC721'
 import { Project, Token } from '../generated/schema'
 import { Mint, Share, Transfer } from '../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721'
@@ -29,6 +29,8 @@ import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC7
   const tokenCategory = "Main category"
 
   test('can create newly minted token', () => {
+    clearStore()
+    
     mockDeployShareContract()
     
     mockShareContractTokenUri('1')
@@ -41,8 +43,6 @@ import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC7
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isSharedInstance', 'false')
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'tokenId', '1')   
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'metadataUri', buildUriForToken(shareTokenContractAddress,'1'))
-
-    clearStore()
   })
 
   test('minted token can be shared', () => {
@@ -66,12 +66,10 @@ import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC7
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'isOriginal', 'false')
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'isSharedInstance', 'true')
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'parentToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ),)
-
-    clearStore()
-
   })
 
   test('minted token can be liked', () => {
+    clearStore()
 
     mockDeployShareContract()
     mockDeployLikeContract()
@@ -92,11 +90,10 @@ import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC7
     assert.fieldEquals('Token', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'isLikeToken', 'true')
     assert.fieldEquals('Token', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'contractAddress', likeContractAddress.toLowerCase())
     assert.fieldEquals('Token', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'metadataUri', buildUriForToken( likeContractAddress, '2' ))
-
-    clearStore()
   })
 
   test('shared token can be liked', () => {
+    clearStore()
 
     mockDeployShareContract()
     mockDeployLikeContract()
@@ -122,9 +119,22 @@ import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC7
     assert.fieldEquals('Token', getTokenEntityId( likeEvent.address.toHexString(), bigInt('3') ), 'contractAddress', likeContractAddress.toLowerCase())
     assert.fieldEquals('Token', getTokenEntityId( likeEvent.address.toHexString(), bigInt('3') ), 'likedParentToken', getTokenEntityId( shareTokenContractAddress, bigInt('2') ))
     assert.fieldEquals('Token', getTokenEntityId( likeEvent.address.toHexString(), bigInt('3') ), 'likedParentToken', getTokenEntityId( shareTokenContractAddress, bigInt('2') ))
+  })
+
+  test('token has category', () => {
     clearStore()
 
+    mockDeployShareContract()
+    
+    mockShareContractTokenUri('1')
+  
+    const mintEvent = createMintEvent(ownerAddress, address1, 1, tokenCategory)
+    handleMint(mintEvent)
+
+    assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'category', tokenCategory)
   })
+
+
 
 function bigInt(i: string): BigInt {
   return BigInt.fromString(i);
