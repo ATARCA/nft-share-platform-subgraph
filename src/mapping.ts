@@ -12,7 +12,7 @@ import { Category, Project, Token } from "../generated/schema"
 import { ShareableERC721TemplateDataSource, LikeERC721TemplateDataSource, EndorseERC721TemplateDataSource } from '../generated/templates'
 import { ShareableERC721 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export function getTokenEntityId(contractAddress: String, tokenId: BigInt): string {
   return `${contractAddress.toLowerCase()}-${tokenId}`
@@ -277,7 +277,7 @@ export function handleLikeTokenTransferred(event: Transfer): void {
   handleTokenTransferred(event)
 }
 
-function handleTokenTransferred(event: Transfer): void {
+export function handleTokenTransferred(event: Transfer): void {
   if (event.params.to.toHexString() == ZERO_ADDRESS) {
     handleTokenBurned(event)
   }

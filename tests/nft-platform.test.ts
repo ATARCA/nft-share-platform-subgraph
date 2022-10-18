@@ -4,9 +4,9 @@ import { describe, clearStore, test, assert, newMockEvent, createMockedFunction 
 import { Like } from '../generated/templates/LikeERC721TemplateDataSource/LikeERC721'
 import { Project, Token } from '../generated/schema'
 import { Mint, Share, Transfer } from '../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721'
-import { getTokenEntityId, handleLike, handleLikeERC721ContractCreated, handleMint, handleShare, handleShareableERC721ContractCreated } from '../src/mapping'
+import { getTokenEntityId, handleLike, handleLikeERC721ContractCreated, handleMint, handleShare, handleShareableERC721ContractCreated, handleTokenTransferred, ZERO_ADDRESS } from '../src/mapping'
 import { LikeERC721ProxyCreated, ShareableERC721ProxyCreated } from '../generated/TalkoFactory/TalkoFactory'
-import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC721ProxyCreatedEvent, createLikeERC721ProxyCreatedEvent } from './eventHelpers'
+import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC721ProxyCreatedEvent, createLikeERC721ProxyCreatedEvent, createTransferEvent } from './eventHelpers'
 
   export const likeContractAddress = '0xFb6394BC5EeE2F9f00ab9df3c8c489A4647f0Daf'
   export const shareTokenContractAddress = "0xe283Bd7c79188b594e9C19E9032ff365A37Cc4fF".toLowerCase()
@@ -43,6 +43,8 @@ import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC7
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isSharedInstance', 'false')
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'tokenId', '1')   
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'metadataUri', buildUriForToken(shareTokenContractAddress,'1'))
+    assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isOriginalOrShared', 'true')
+    assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isBurned', 'false')
   })
 
   test('minted token can be shared', () => {
@@ -61,11 +63,13 @@ import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC7
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'ownerAddress', address1.toLowerCase())
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isOriginal', 'true')
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isSharedInstance', 'false')
+    assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isOriginalOrShared', 'true')
 
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'ownerAddress', address2.toLowerCase())
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'isOriginal', 'false')
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'isSharedInstance', 'true')
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'parentToken', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ),)
+    assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('2') ), 'isOriginalOrShared', 'true')
   })
 
   test('minted token can be liked', () => {
@@ -133,6 +137,27 @@ import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC7
 
     assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'category', tokenCategory)
   })
+
+  test('token can be burned', () => {
+    clearStore()
+    
+    mockDeployShareContract()
+    
+    mockShareContractTokenUri('1')
+  
+    const mintEvent = createMintEvent(ownerAddress, address1, 1, tokenCategory)
+    handleMint(mintEvent)
+
+    burnToken(1)
+
+    assert.fieldEquals('Token', getTokenEntityId( mintEvent.address.toHexString(), bigInt('1') ), 'isBurned', 'true')
+
+  })
+
+function burnToken(tokenId: i32): void {
+  const burnEvent = createTransferEvent(ownerAddress, ZERO_ADDRESS, tokenId)
+  handleTokenTransferred(burnEvent)
+}
 
 
 
