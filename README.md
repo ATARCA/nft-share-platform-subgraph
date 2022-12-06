@@ -1,7 +1,5 @@
 # nft-share-platform-subgraph
 
-TODO: specify license before publishing this repo
-
 Subgraph implementation for contract indexing. This indexes the `TalkoFactory`, `ShareableERC721` and `LikeERC721` contracts. Only address of deployed `TalkoFactory` has to be provided, other contracts are added dynamically as they are deployed.
 
 ### Project structure
