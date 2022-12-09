@@ -20,8 +20,9 @@ type Token @entity {
   isOriginal: Boolean! #token is original minted by the project admin
   isSharedInstance: Boolean! #token was shared by the parent token owner with a 3rd person
   isOriginalOrShared: Boolean! #combination of 2 fields isOriginal or isSharedInstance
-  isLikeToken: Boolean! #token represent like of an original or shared token
-  
+  isLikeToken: Boolean! #token represents like of an original or shared token
+  isEndorseToken: Boolean! #token represents endorse of an original or shared token
+
   tokenId: BigInt
   parentTokenId: BigInt #parent of a shared token
 
@@ -30,6 +31,10 @@ type Token @entity {
   
   likedParentToken: Token
   likeTokens: [Token!]! @derivedFrom(field: "likedParentToken") # tokens from that have liked this token
+
+  endorsedParentToken: Token
+  endorseTokens: [Token!]! @derivedFrom(field: "endorsedParentToken") # tokens from that have endorsed this token
+  endorseTokenReceiverAddress: Bytes
 
   category: Category!
   isBurned: Boolean!

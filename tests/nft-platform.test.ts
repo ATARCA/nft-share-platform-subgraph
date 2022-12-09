@@ -4,13 +4,14 @@ import { describe, clearStore, test, assert, newMockEvent, createMockedFunction 
 import { Like } from '../generated/templates/LikeERC721TemplateDataSource/LikeERC721'
 import { Project, Token } from '../generated/schema'
 import { Mint, Share, ShareableERC721, Transfer } from '../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721'
-import { getTokenEntityId, handleLike, handleLikeERC721ContractCreated, handleMint, handleShare, handleShareableERC721ContractCreated, handleShareContractRoleGranted, handleShareContractRoleRevoked, handleTokenTransferred, ZERO_ADDRESS } from '../src/mapping'
+import { getTokenEntityId, handleEndorse, handleEndorseERC721ContractCreated, handleLike, handleLikeERC721ContractCreated, handleMint, handleShare, handleShareableERC721ContractCreated, handleShareContractRoleGranted, handleShareContractRoleRevoked, handleTokenTransferred, ZERO_ADDRESS } from '../src/mapping'
 import { LikeERC721ProxyCreated, ShareableERC721ProxyCreated } from '../generated/TalkoFactory/TalkoFactory'
-import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC721ProxyCreatedEvent, createLikeERC721ProxyCreatedEvent, createTransferEvent, createRoleGrantedEvent, createRoleRevokedEvent } from './eventHelpers'
+import { createMintEvent, createShareEvent, createLikeEvent, createShareableERC721ProxyCreatedEvent, createLikeERC721ProxyCreatedEvent, createTransferEvent, createRoleGrantedEvent, createRoleRevokedEvent, createEndorseERC721ProxyCreatedEvent, createEndorseEvent } from './eventHelpers'
 import { Bytes } from '@graphprotocol/graph-ts'
 
   export const likeContractAddress = '0xFb6394BC5EeE2F9f00ab9df3c8c489A4647f0Daf'
   export const shareTokenContractAddress = "0xe283Bd7c79188b594e9C19E9032ff365A37Cc4fF".toLowerCase()
+  export const endorseContractAddress = "0xb2Ca05e0a08B6a45Ba7AE0ec0EFdd9D65d32B04C".toLowerCase()
   export const factoryContractAddress = "0xdFC209D462Fc1d92C2e6ba64A2BAcc806d75D649".toLowerCase()
 
   const ownerAddress = '0xE54BB854621E8CA08666082ABE50a9f4316469BB'
@@ -27,6 +28,7 @@ import { Bytes } from '@graphprotocol/graph-ts'
   const projectName = 'token name'
   const shareTokenSymbol = 'SHARE'
   const likeTokenSymbol = 'LIKE'
+  const endorseTokenSymbol = 'LIKE'
 
   const tokenCategory = "Main category"
 
@@ -98,6 +100,33 @@ import { Bytes } from '@graphprotocol/graph-ts'
     assert.fieldEquals('Token', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'isLikeToken', 'true')
     assert.fieldEquals('Token', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'contractAddress', likeContractAddress.toLowerCase())
     assert.fieldEquals('Token', getTokenEntityId( likeEvent.address.toHexString(), bigInt('2') ), 'metadataUri', buildUriForToken( likeContractAddress, '2' ))
+  })
+
+  test('minted token can be endorsed', () => {
+    clearStore()
+
+    mockDeployEndorseContract()
+
+    mockEndorseContractTokenUri('3')
+
+    const mintEvent1 = createMintEvent(ownerAddress, address1 /*endorser*/, 1, tokenCategory)
+    handleMint(mintEvent1)
+
+    const mintEvent2 = createMintEvent(ownerAddress, address2 /*endorsee*/, 2, tokenCategory)
+    handleMint(mintEvent2)
+
+    const endorseEvent = createEndorseEvent(address1, address2, 3, 2)
+    handleEndorse(endorseEvent)
+
+    assert.fieldEquals('Token', getTokenEntityId( endorseEvent.address.toHexString(), bigInt('3') ), 'ownerAddress', address1.toLowerCase())
+    assert.fieldEquals('Token', getTokenEntityId( endorseEvent.address.toHexString(), bigInt('3') ), 'endorseTokenReceiverAddress', address2.toLowerCase())
+    assert.fieldEquals('Token', getTokenEntityId( endorseEvent.address.toHexString(), bigInt('3') ), 'tokenId', '3')
+    assert.fieldEquals('Token', getTokenEntityId( endorseEvent.address.toHexString(), bigInt('3') ), 'isOriginal', 'false')
+    assert.fieldEquals('Token', getTokenEntityId( endorseEvent.address.toHexString(), bigInt('3') ), 'isSharedInstance', 'false')
+    assert.fieldEquals('Token', getTokenEntityId( endorseEvent.address.toHexString(), bigInt('3') ), 'isLikeToken', 'false')
+    assert.fieldEquals('Token', getTokenEntityId( endorseEvent.address.toHexString(), bigInt('3') ), 'isEndorseToken', 'true')
+    assert.fieldEquals('Token', getTokenEntityId( endorseEvent.address.toHexString(), bigInt('3') ), 'contractAddress', endorseContractAddress.toLowerCase())
+    assert.fieldEquals('Token', getTokenEntityId( endorseEvent.address.toHexString(), bigInt('3') ), 'metadataUri', buildUriForToken( likeContractAddress, '3' ))
   })
 
   test('shared token can be liked', () => {
@@ -205,10 +234,10 @@ function bigInt(i: string): BigInt {
   return BigInt.fromString(i);
 }
 
-function mockLikeContractProjectAddress(projectAddress: string): void {
-  createMockedFunction(Address.fromString(likeContractAddress),"getProjectAddress",
+function mockContractProjectAddress(projectAddress: string, contractAddress: string): void {
+  createMockedFunction(Address.fromString(contractAddress),"getProjectAddress",
   "getProjectAddress():(address)")
-  .returns([ethereum.Value.fromAddress(Address.fromString(shareTokenContractAddress))])
+  .returns([ethereum.Value.fromAddress(Address.fromString(projectAddress))])
 }
 
 function mockShareContractTokenUri(tokenId: string): void {
@@ -226,6 +255,12 @@ function mockLikeContractTokenUri(tokenId: string): void {
   createMockedFunction(Address.fromString(likeContractAddress),"tokenURI", "tokenURI(uint256):(string)")
   .withArgs([ethereum.Value.fromUnsignedBigInt(BigInt.fromString(tokenId))])
   .returns([ethereum.Value.fromString(buildUriForToken(likeContractAddress,tokenId))])
+}
+
+function mockEndorseContractTokenUri(tokenId: string): void {
+  createMockedFunction(Address.fromString(endorseContractAddress),"tokenURI", "tokenURI(uint256):(string)")
+  .withArgs([ethereum.Value.fromUnsignedBigInt(BigInt.fromString(tokenId))])
+  .returns([ethereum.Value.fromString(buildUriForToken(endorseContractAddress,tokenId))])
 }
 
 function mockShareContractName(): void {
@@ -250,16 +285,26 @@ function mockDeployShareContract(): void {
 }
 
 function mockDeployLikeContract(): void {
-  mockLikeContractProjectAddress(shareTokenContractAddress)
+  mockContractProjectAddress(shareTokenContractAddress, likeContractAddress)
 
   const likeContractDeployedEvent = createLikeERC721ProxyCreatedEvent(likeContractAddress, 
     operatorAddress, 
     projectName, 
-    likeContractAddress)
+    likeTokenSymbol)
 
   handleLikeERC721ContractCreated(likeContractDeployedEvent)
 }
 
+function mockDeployEndorseContract(): void {
+  mockContractProjectAddress(shareTokenContractAddress, endorseContractAddress)
+
+  const endorseContractDeployedEvent = createEndorseERC721ProxyCreatedEvent(endorseContractAddress, 
+    operatorAddress, 
+    projectName, 
+    endorseTokenSymbol)
+
+  handleEndorseERC721ContractCreated(endorseContractDeployedEvent)
+}
 
 function handleShares(events: Share[]): void {
   events.forEach((event) => {
