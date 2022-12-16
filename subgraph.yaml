@@ -90,6 +90,8 @@ templates:
       abis:
         - name: EndorseERC721
           file: ./abis/EndorseERC721.sol/EndorseERC721.json
+        - name: ShareableERC721
+          file: ./abis/ShareableERC721.sol/ShareableERC721.json
       eventHandlers:
         - event: Endorse(indexed address,indexed address,indexed uint256,uint256)
           handler: handleEndorse
