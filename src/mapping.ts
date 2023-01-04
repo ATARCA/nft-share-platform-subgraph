@@ -7,7 +7,7 @@ import {
   Transfer
 } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
 import { Like, LikeERC721 } from "../generated/templates/LikeERC721TemplateDataSource/LikeERC721"
-import { Endorse } from "../generated/templates/EndorseERC721TemplateDataSource/EndorseERC721"
+import { Endorse, EndorseERC721 } from "../generated/templates/EndorseERC721TemplateDataSource/EndorseERC721"
 import { EndorseERC721ProxyCreated, LikeERC721ProxyCreated, ShareableERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
 import { Category, Project, Token } from "../generated/schema"
 import { ShareableERC721TemplateDataSource, LikeERC721TemplateDataSource, EndorseERC721TemplateDataSource } from '../generated/templates'
@@ -162,6 +162,8 @@ export function handleShare(event: Share): void {
   newToken.isSharedInstance = true
   newToken.isOriginalOrShared = true
   newToken.isLikeToken = false
+  newToken.isEndorseToken = false
+
   newToken.contractAddress = shareContractAddress
   newToken.metadataUri = shareContract.tokenURI(event.params.tokenId)
   newToken.category = parentToken.category
@@ -201,6 +203,8 @@ export function handleMint(event: Mint): void {
   token.isSharedInstance = false
   token.isOriginalOrShared = true
   token.isLikeToken = false
+  token.isEndorseToken = false
+
   token.tokenId = event.params.tokenId
   token.contractAddress = shareContractAddress
   token.metadataUri = shareContract.tokenURI(event.params.tokenId)
@@ -233,7 +237,6 @@ export function handleLike(event: Like): void {
 
   const project = Project.load(shareContract.name())
 
-
   const parentTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.contributionTokenId)
   let parentToken = Token.load(parentTokenEntityId)
 
@@ -242,9 +245,9 @@ export function handleLike(event: Like): void {
     log.critical('Token to be liked does not exist. TokenId {}', [parentTokenEntityId])
   }
 
-  const tokenEntityId = getTokenEntityIdFromAddress(likeContractAddress, event.params.likeTokenId)
+  const likeTokenEntityId = getTokenEntityIdFromAddress(likeContractAddress, event.params.likeTokenId)
 
-  const likeToken = new Token(tokenEntityId)
+  const likeToken = new Token(likeTokenEntityId)
 
   likeToken.ownerAddress = event.params.liker
   likeToken.contractAddress = likeContractAddress
@@ -252,6 +255,8 @@ export function handleLike(event: Like): void {
   likeToken.isSharedInstance = false
   likeToken.isOriginalOrShared = false
   likeToken.isLikeToken = true
+  likeToken.isEndorseToken = false
+
 
   likeToken.tokenId = event.params.likeTokenId
   likeToken.likedParentToken = parentToken.id
@@ -268,6 +273,45 @@ export function handleLike(event: Like): void {
 }
 
 export function handleEndorse(event: Endorse): void {
+  const endorseContractAddress = event.address;
+  const endorseContract = EndorseERC721.bind(endorseContractAddress)
+  const shareContractAddress = endorseContract.getProjectAddress()
+  const shareContract = ShareableERC721.bind(shareContractAddress)
+
+  const project = Project.load(shareContract.name())
+
+  const parentTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.contributionTokenId)
+  let parentToken = Token.load(parentTokenEntityId)
+
+  if (!parentToken) {
+    parentToken = new Token(parentTokenEntityId)
+    log.critical('Token to be endorsed does not exist. TokenId {}', [parentTokenEntityId])
+  }
+
+  const endorseTokenEntityId = getTokenEntityIdFromAddress(endorseContractAddress, event.params.endorsementTokenId)
+
+  const endorseToken = new Token(endorseTokenEntityId)
+
+  endorseToken.ownerAddress = event.params.endorser
+  endorseToken.endorseTokenReceiverAddress = event.params.endorsee
+  endorseToken.contractAddress = endorseContractAddress
+  endorseToken.isOriginal = false 
+  endorseToken.isSharedInstance = false
+  endorseToken.isOriginalOrShared = false
+  endorseToken.isLikeToken = false
+  endorseToken.isEndorseToken = true
+
+  endorseToken.tokenId = event.params.endorsementTokenId
+  endorseToken.endorsedParentToken = parentToken.id
+  endorseToken.metadataUri = endorseContract.tokenURI(event.params.endorsementTokenId)
+  endorseToken.category = parentToken.category
+  endorseToken.isBurned = false
+  endorseToken.mintBlock = event.block.number
+
+  if (project) endorseToken.project = project.id
+  else log.critical('Project does not exist {}', [shareContract.name()])
+
+  endorseToken.save()
 }
 
 export function handleShareTokenTransferred(event: Transfer): void {

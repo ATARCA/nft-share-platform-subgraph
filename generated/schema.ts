@@ -255,6 +255,15 @@ export class Token extends Entity {
     this.set("isLikeToken", Value.fromBoolean(value));
   }
 
+  get isEndorseToken(): boolean {
+    let value = this.get("isEndorseToken");
+    return value!.toBoolean();
+  }
+
+  set isEndorseToken(value: boolean) {
+    this.set("isEndorseToken", Value.fromBoolean(value));
+  }
+
   get tokenId(): BigInt | null {
     let value = this.get("tokenId");
     if (!value || value.kind == ValueKind.NULL) {
@@ -339,6 +348,49 @@ export class Token extends Entity {
 
   set likeTokens(value: Array<string>) {
     this.set("likeTokens", Value.fromStringArray(value));
+  }
+
+  get endorsedParentToken(): string | null {
+    let value = this.get("endorsedParentToken");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set endorsedParentToken(value: string | null) {
+    if (!value) {
+      this.unset("endorsedParentToken");
+    } else {
+      this.set("endorsedParentToken", Value.fromString(<string>value));
+    }
+  }
+
+  get endorseTokens(): Array<string> {
+    let value = this.get("endorseTokens");
+    return value!.toStringArray();
+  }
+
+  set endorseTokens(value: Array<string>) {
+    this.set("endorseTokens", Value.fromStringArray(value));
+  }
+
+  get endorseTokenReceiverAddress(): Bytes | null {
+    let value = this.get("endorseTokenReceiverAddress");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set endorseTokenReceiverAddress(value: Bytes | null) {
+    if (!value) {
+      this.unset("endorseTokenReceiverAddress");
+    } else {
+      this.set("endorseTokenReceiverAddress", Value.fromBytes(<Bytes>value));
+    }
   }
 
   get category(): string {

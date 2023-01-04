@@ -1,9 +1,10 @@
 import { Address, Bytes, ethereum } from "@graphprotocol/graph-ts"
 import { newMockEvent } from "matchstick-as"
-import { ShareableERC721ProxyCreated, LikeERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
+import { ShareableERC721ProxyCreated, LikeERC721ProxyCreated, EndorseERC721ProxyCreated } from "../generated/TalkoFactory/TalkoFactory"
+import { Endorse } from "../generated/templates/EndorseERC721TemplateDataSource/EndorseERC721"
 import { Like } from "../generated/templates/LikeERC721TemplateDataSource/LikeERC721"
 import { Share, Mint, Transfer, RoleGranted, RoleRevoked } from "../generated/templates/ShareableERC721TemplateDataSource/ShareableERC721"
-import { shareTokenContractAddress, likeContractAddress, factoryContractAddress } from "./nft-platform.test"
+import { shareTokenContractAddress, likeContractAddress, factoryContractAddress, endorseContractAddress } from "./nft-platform.test"
 
 export function createShareEvent(
     fromAddress: string,
@@ -62,6 +63,37 @@ export function createShareEvent(
     newShareEvent.parameters.push(likerParam)
     newShareEvent.parameters.push(likeeParam)
     newShareEvent.parameters.push(likeTokenIdParam)
+    newShareEvent.parameters.push(contributionTokenIdParam)
+  
+    return newShareEvent
+  }
+
+  export function createEndorseEvent(
+    endorser: string,
+    endorsee: string,
+    endorsementTokenId: i32,
+    contributionTokenId: i32
+  ): Endorse {
+    let mockEvent = newMockEvent()
+    let newShareEvent = new Endorse(
+      Address.fromString(endorseContractAddress),
+      mockEvent.logIndex,
+      mockEvent.transactionLogIndex,
+      mockEvent.logType,
+      mockEvent.block,
+      mockEvent.transaction,
+      mockEvent.parameters,
+      mockEvent.receipt
+    )
+  
+    let endorserParam = new ethereum.EventParam('endorser', ethereum.Value.fromAddress(Address.fromString(endorser)))
+    let endorseeParam = new ethereum.EventParam('endorsee', ethereum.Value.fromAddress(Address.fromString(endorsee)))
+    let endorsementTokenIdParam = new ethereum.EventParam('endorsementTokenId', ethereum.Value.fromI32(endorsementTokenId))
+    let contributionTokenIdParam = new ethereum.EventParam('contributionTokenId', ethereum.Value.fromI32(contributionTokenId))
+  
+    newShareEvent.parameters.push(endorserParam)
+    newShareEvent.parameters.push(endorseeParam)
+    newShareEvent.parameters.push(endorsementTokenIdParam)
     newShareEvent.parameters.push(contributionTokenIdParam)
   
     return newShareEvent
@@ -181,6 +213,37 @@ export function createShareEvent(
     let _symbolParam = new ethereum.EventParam('_symbol', ethereum.Value.fromString(_symbol))
   
     newDeployEvent.parameters.push(_lproxyParam)
+    newDeployEvent.parameters.push(_ownerParam)
+    newDeployEvent.parameters.push(_nameParam)
+    newDeployEvent.parameters.push(_symbolParam)
+  
+    return newDeployEvent
+  }
+
+  export function createEndorseERC721ProxyCreatedEvent(
+    _eproxy: string,
+    _owner: string,
+    _name: string,
+    _symbol: string
+  ): EndorseERC721ProxyCreated {
+    let mockEvent = newMockEvent()
+    let newDeployEvent = new EndorseERC721ProxyCreated(
+      Address.fromString(factoryContractAddress),
+      mockEvent.logIndex,
+      mockEvent.transactionLogIndex,
+      mockEvent.logType,
+      mockEvent.block,
+      mockEvent.transaction,
+      mockEvent.parameters,
+      mockEvent.receipt
+    )
+  
+    let _eproxyParam = new ethereum.EventParam('_eproxy', ethereum.Value.fromAddress(Address.fromString(_eproxy)))
+    let _ownerParam = new ethereum.EventParam('_owner', ethereum.Value.fromAddress(Address.fromString(_owner)))
+    let _nameParam = new ethereum.EventParam('_name', ethereum.Value.fromString(_name))
+    let _symbolParam = new ethereum.EventParam('_symbol', ethereum.Value.fromString(_symbol))
+  
+    newDeployEvent.parameters.push(_eproxyParam)
     newDeployEvent.parameters.push(_ownerParam)
     newDeployEvent.parameters.push(_nameParam)
     newDeployEvent.parameters.push(_symbolParam)
