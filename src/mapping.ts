@@ -40,7 +40,6 @@ export function handleShareableERC721ContractCreated(event: ShareableERC721Proxy
   ShareableERC721TemplateDataSource.create(event.params._sproxy)
 
   log.info('Share contract created name {}  {}', [projectName,event.address.toHexString()])
-
 }
 
 function createProject(projectName: string): Project {
@@ -281,6 +280,7 @@ export function handleEndorse(event: Endorse): void {
   const project = Project.load(shareContract.name())
 
   const parentTokenEntityId = getTokenEntityIdFromAddress( shareContractAddress, event.params.contributionTokenId)
+
   let parentToken = Token.load(parentTokenEntityId)
 
   if (!parentToken) {
@@ -303,7 +303,23 @@ export function handleEndorse(event: Endorse): void {
 
   endorseToken.tokenId = event.params.endorsementTokenId
   endorseToken.endorsedParentToken = parentToken.id
-  endorseToken.metadataUri = endorseContract.tokenURI(event.params.endorsementTokenId)
+
+  let tokenURI = endorseContract.tokenURI(event.params.endorsementTokenId)
+  //Fix for tokenURI- if token uri is contains shareable contract address, fix it to endrose contract address
+  //Also replace contribution token ID with endorsement token ID
+  if (project) {
+    const shareableContractAddress = project.shareableContractAddress
+    const endorseContractAddress = project.endorseContractAddress
+    if (shareableContractAddress && endorseContractAddress) {
+      tokenURI = tokenURI.replace(shareableContractAddress.toHexString(), endorseContractAddress.toHexString())
+
+      const tokenURIsegments = tokenURI.split('/')
+      tokenURIsegments[tokenURIsegments.length-1]= event.params.endorsementTokenId.toString()
+      const tokenURIwithFixedTokenID = tokenURIsegments.join('/')
+      endorseToken.metadataUri = tokenURIwithFixedTokenID
+    }
+  }
+
   endorseToken.category = parentToken.category
   endorseToken.isBurned = false
   endorseToken.mintBlock = event.block.number
